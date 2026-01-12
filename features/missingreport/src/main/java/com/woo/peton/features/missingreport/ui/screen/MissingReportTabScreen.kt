@@ -60,19 +60,11 @@ fun MissingReportTabScreen(
                 MissingReportBottomSheet(
                     height = sheetMaxHeight,
                     pets = uiState.currentPets,
-                    selectedPet = selectedPet, // 선택된 펫 정보 전달
-                    onItemClick = { petId ->
-                        // 리스트 아이템 클릭 -> 펫 선택
-                        viewModel.selectPet(petId)
-                    },
-                    onDetailClick = {
-                        // 요약 카드 클릭 -> 전체 상세 화면 이동
-                        if (selectedPet != null) {
-                            onNavigateToDetail(selectedPet!!.id)
-                        }
+                    selectedPet = selectedPet,
+                    onItemClick = { selectedPetId ->
+                        onNavigateToDetail(selectedPetId)
                     },
                     onBackToList = {
-                        // 요약 화면에서 뒤로가기 -> 선택 해제
                         viewModel.clearSelection()
                     }
                 )
