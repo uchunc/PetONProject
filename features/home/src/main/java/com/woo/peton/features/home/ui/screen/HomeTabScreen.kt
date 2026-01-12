@@ -15,7 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.woo.peton.core.ui.component.PetCardVertical
+import com.woo.peton.core.ui.component.PetCard
 import com.woo.peton.core.ui.component.SectionHeader
 import com.woo.peton.features.home.HomeViewModel
 import com.woo.peton.features.home.ui.items.*
@@ -97,7 +97,7 @@ private fun HomeContent(
                 ) {
                     // [변경] MissingPet 객체를 그대로 넘김
                     items(state.missingPets) { pet ->
-                        PetCardVertical(
+                        PetCard(
                             pet = pet,
                             onClick = { /* 상세 페이지 이동 로직 */ },
                             modifier = Modifier.width(160.dp) // 카드의 너비 지정
@@ -108,7 +108,6 @@ private fun HomeContent(
             Spacer(modifier = Modifier.height(32.dp))
         }
 
-        // 5. 임보 동물 리스트 (LazyRow -> PetCardVertical 사용)
         if (state.fosterPets.isNotEmpty()) {
             Column {
                 SectionHeader(
@@ -121,7 +120,7 @@ private fun HomeContent(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(state.fosterPets) { pet ->
-                        PetCardVertical(
+                        PetCard(
                             pet = pet,
                             onClick = { /* 상세 페이지 이동 로직 */ },
                             modifier = Modifier.width(160.dp)
