@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "599853038898",
+    "project_id": "peton-e6000",
+    "storage_bucket": "peton-e6000.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:599853038898:android:47a0d3cf41bdefb783ab2b",
+        "android_client_info": {
+          "package_name": "com.woo.peton"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDnyXzhVVoXnESRdOz1KYpEU1RgPs7N-V0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

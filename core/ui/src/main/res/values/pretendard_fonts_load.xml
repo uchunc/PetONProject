@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="pretendard_fonts" translatable="false">
+        <item>@font/pretendard_regular</item>
+        <item>@font/pretendard_semibold</item>
+    </array>
+</resources>
