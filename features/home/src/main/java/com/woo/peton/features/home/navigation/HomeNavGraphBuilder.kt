@@ -9,10 +9,12 @@ import com.woo.peton.features.home.ui.screen.HomeTabScreen
 fun NavGraphBuilder.homeNavBuilder(
     navController: NavController,
     onNavigateToPetDetail: (String) -> Unit,
+    onNavigateToReportPetDetail: (String) -> Unit
 ) {
     composable<HomeScreen> {
         HomeTabScreen(
-            onNavigateToPetDetail = onNavigateToPetDetail
+            onNavigateToPetDetail = onNavigateToPetDetail,
+            onNavigateToReportPetDetail = onNavigateToReportPetDetail
         )
     }
 }

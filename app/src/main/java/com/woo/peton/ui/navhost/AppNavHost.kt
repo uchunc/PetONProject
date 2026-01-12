@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.woo.peton.core.ui.navigation.AuthGraph
+import com.woo.peton.core.ui.navigation.MissingNavigationRoute
 import com.woo.peton.core.ui.navigation.MyPageNavigationRoute
 import com.woo.peton.features.auth.navigation.authNavBuilder
 import com.woo.peton.features.chatting.navigation.chatNavBuilder
@@ -28,6 +29,9 @@ fun AppNavHost(
             navController = navController,
             onNavigateToPetDetail = { petId ->
                 navController.navigate(MyPageNavigationRoute.MyPetDetailScreen(petId))
+            },
+            onNavigateToReportPetDetail = { petId ->
+                navController.navigate(MissingNavigationRoute.DetailScreen(petId))
             }
         )
 

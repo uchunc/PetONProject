@@ -21,7 +21,6 @@ sealed interface MissingNavigationRoute : PetOnNavigation {
     data object MissingScreen : MissingNavigationRoute
     @Serializable
     data class DetailScreen(val petId: String) : MissingNavigationRoute
-
     @Serializable
     data object PostingScreen : MissingNavigationRoute
     @Serializable
@@ -42,7 +41,6 @@ data object AuthGraph : PetOnNavigation
 sealed interface AuthNavigationRoute : PetOnNavigation {
     @Serializable
     data object AuthScreen : AuthNavigationRoute
-
     @Serializable
     data object SignUpScreen : AuthNavigationRoute
 }

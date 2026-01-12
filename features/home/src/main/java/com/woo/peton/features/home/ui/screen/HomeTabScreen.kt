@@ -24,7 +24,8 @@ import com.woo.peton.features.home.ui.state.HomeUiState
 @Composable
 fun HomeTabScreen(
     viewModel: HomeViewModel = hiltViewModel(),
-    onNavigateToPetDetail: (String) -> Unit
+    onNavigateToPetDetail: (String) -> Unit,
+    onNavigateToReportPetDetail: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -40,7 +41,8 @@ fun HomeTabScreen(
             is HomeUiState.Success -> {
                 HomeContent(
                     state = state,
-                    onPetClick = onNavigateToPetDetail
+                    onPetClick = onNavigateToPetDetail,
+                    onReportClick = onNavigateToReportPetDetail
                 )
             }
             is HomeUiState.Error -> {
@@ -56,7 +58,8 @@ fun HomeTabScreen(
 @Composable
 private fun HomeContent(
     state: HomeUiState.Success,
-    onPetClick: (String) -> Unit
+    onPetClick: (String) -> Unit,
+    onReportClick: (String) -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -99,7 +102,7 @@ private fun HomeContent(
                     items(state.missingPets) { pet ->
                         PetCard(
                             pet = pet,
-                            onClick = { /* 상세 페이지 이동 로직 */ },
+                            onClick = { onReportClick(pet.id) },
                             modifier = Modifier.width(160.dp) // 카드의 너비 지정
                         )
                     }
@@ -122,7 +125,7 @@ private fun HomeContent(
                     items(state.fosterPets) { pet ->
                         PetCard(
                             pet = pet,
-                            onClick = { /* 상세 페이지 이동 로직 */ },
+                            onClick = { onReportClick(pet.id) },
                             modifier = Modifier.width(160.dp)
                         )
                     }
