@@ -9,7 +9,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.woo.peton.core.ui.component.PetCardVertical
+import com.woo.peton.core.ui.component.PetCard
 import com.woo.peton.domain.model.MissingPet
 
 @Composable
@@ -24,11 +24,11 @@ fun ReportGridContent(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.fillMaxSize()
     ) {
-        items(pets) { missingPet ->
+        items(pets) { reportedPets ->
             // 앞서 정의한 Core UI의 PetCardVertical 사용
-            PetCardVertical(
-                pet = missingPet, // 파라미터 이름을 pet으로 통일 (이전 구현 참고)
-                onClick = { onItemClick(missingPet.id) }
+            PetCard(
+                pet = reportedPets, // 파라미터 이름을 pet으로 통일 (이전 구현 참고)
+                onClick = { onItemClick(reportedPets.id) }
             )
         }
     }

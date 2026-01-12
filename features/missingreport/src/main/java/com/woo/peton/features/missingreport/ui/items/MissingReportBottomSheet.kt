@@ -15,7 +15,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.woo.peton.core.ui.component.PetCardHorizontal
 import com.woo.peton.domain.model.MissingPet
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -24,9 +23,8 @@ fun MissingReportBottomSheet(
     modifier: Modifier = Modifier,
     height: Dp,
     pets: List<MissingPet>,
-    selectedPet: MissingPet?, // 🟢 선택된 펫 (nullable)
+    selectedPet: MissingPet?,
     onItemClick: (String) -> Unit,
-    onDetailClick: () -> Unit,
     onBackToList: () -> Unit
 ) {
     // 상세 정보 모드일 때, 뒤로가기 버튼(하드웨어)을 누르면 리스트로 복귀
@@ -49,26 +47,10 @@ fun MissingReportBottomSheet(
                     .padding(vertical = 1.dp)
                     .width(32.dp)
             )
-
-            // 2. 내용물 (상태에 따라 전환)
-            Box(modifier = Modifier.weight(1f)) {
-                if (selectedPet != null) {
-                    // [B] 상세 요약 모드 (가로형 카드)
-                    // Box로 감싸서 중앙 정렬 혹은 상단 배치
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        PetCardHorizontal(
-                            pet = selectedPet,
-                            onDetailClick = onDetailClick
-                        )
-                    }
-                } else {
-                    // [A] 리스트 모드 (그리드)
-                    ReportGridContent(
-                        pets = pets,
-                        onItemClick = onItemClick
-                    )
-                }
-            }
+            ReportGridContent(
+                pets = pets,
+                onItemClick = onItemClick
+            )
         }
     }
 }
