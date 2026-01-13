@@ -48,7 +48,7 @@ class HomeViewModel @Inject constructor(
         HomeUiState.Success(
             myPet = myPets,
             missingPets = missingPets,
-            fosterPets = fosterPets,
+            ProtectionPets = fosterPets,
             promoBanner = promoBanner,
             detectives = detectives
         ) as HomeUiState // 타입 캐스팅 명시

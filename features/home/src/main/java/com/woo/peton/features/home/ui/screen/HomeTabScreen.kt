@@ -1,9 +1,12 @@
 package com.woo.peton.features.home.ui.screen
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -15,17 +18,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.woo.peton.core.ui.component.PetCard
-import com.woo.peton.core.ui.component.SectionHeader
+import com.woo.peton.domain.model.ReportType
 import com.woo.peton.features.home.HomeViewModel
-import com.woo.peton.features.home.ui.items.*
+import com.woo.peton.features.home.ui.items.CustomerCenterSection
+import com.woo.peton.features.home.ui.items.DetectiveSection
+import com.woo.peton.features.home.ui.items.HomePetListSection
+import com.woo.peton.features.home.ui.items.MyPetSection
+import com.woo.peton.features.home.ui.items.PromoBanner
+import com.woo.peton.features.home.ui.items.ReportBanner
+import com.woo.peton.features.home.ui.items.TopSloganSection
 import com.woo.peton.features.home.ui.state.HomeUiState
 
 @Composable
 fun HomeTabScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     onNavigateToPetDetail: (String) -> Unit,
-    onNavigateToReportPetDetail: (String) -> Unit
+    onNavigateToReportList: (ReportType) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -42,7 +50,7 @@ fun HomeTabScreen(
                 HomeContent(
                     state = state,
                     onPetClick = onNavigateToPetDetail,
-                    onReportClick = onNavigateToReportPetDetail
+                    onReportViewAllClick = onNavigateToReportList
                 )
             }
             is HomeUiState.Error -> {
@@ -59,7 +67,7 @@ fun HomeTabScreen(
 private fun HomeContent(
     state: HomeUiState.Success,
     onPetClick: (String) -> Unit,
-    onReportClick: (String) -> Unit
+    onReportViewAllClick: (ReportType) -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -69,11 +77,9 @@ private fun HomeContent(
             .verticalScroll(scrollState)
             .padding(bottom = 20.dp)
     ) {
-        // 1. 슬로건
         TopSloganSection(modifier = Modifier.padding(horizontal = 20.dp))
         Spacer(modifier = Modifier.height(24.dp))
 
-        // 2. 나의 반려동물
         state.myPet.let { petData ->
             MyPetSection(
                 pets = petData,
@@ -82,65 +88,35 @@ private fun HomeContent(
             Spacer(modifier = Modifier.height(24.dp))
         }
 
-        // 3. 신고 배너
         ReportBanner(modifier = Modifier.padding(horizontal = 20.dp))
         Spacer(modifier = Modifier.height(32.dp))
 
-        // 4. 실종 동물 리스트 (LazyRow -> PetCardVertical 사용)
-        if (state.missingPets.isNotEmpty()) {
-            Column {
-                SectionHeader(
-                    title = "주인을 찾고 있어요!",
-                    onMoreClick = {},
-                    modifier = Modifier.padding(horizontal = 20.dp)
-                )
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 20.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    // [변경] MissingPet 객체를 그대로 넘김
-                    items(state.missingPets) { pet ->
-                        PetCard(
-                            pet = pet,
-                            onClick = { onReportClick(pet.id) },
-                            modifier = Modifier.width(160.dp) // 카드의 너비 지정
-                        )
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(32.dp))
-        }
+        HomePetListSection(
+            title = "주인을 찾고 있어요!",
+            pets = state.missingPets,
+            onPetClick = onPetClick,
+            onViewAllClick = { onReportViewAllClick(ReportType.MISSING) }
+        )
 
-        if (state.fosterPets.isNotEmpty()) {
-            Column {
-                SectionHeader(
-                    title = "새 가족을 기다리는 임보 동물",
-                    onMoreClick = {},
-                    modifier = Modifier.padding(horizontal = 20.dp)
-                )
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 20.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(state.fosterPets) { pet ->
-                        PetCard(
-                            pet = pet,
-                            onClick = { onReportClick(pet.id) },
-                            modifier = Modifier.width(160.dp)
-                        )
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(32.dp))
-        }
+        HomePetListSection(
+            title = "새 가족을 기다리는 임보 동물",
+            pets = state.ProtectionPets,
+            onPetClick = onPetClick,
+            onViewAllClick = { onReportViewAllClick(ReportType.PROTECTION) }
+        )
 
-        // 6. 프로모션 배너
+        HomePetListSection(
+            title = "목격된 동물을 알려드려요",
+            pets = state.spottedPets,
+            onPetClick = onPetClick,
+            onViewAllClick = { onReportViewAllClick(ReportType.SPOTTED) }
+        )
+
         state.promoBanner?.let { banner ->
             PromoBanner(data = banner, modifier = Modifier.padding(horizontal = 20.dp))
             Spacer(modifier = Modifier.height(32.dp))
         }
 
-        // 7. 탐정 섹션
         DetectiveSection(
             items = state.detectives,
             onClick = {},
@@ -148,7 +124,6 @@ private fun HomeContent(
         )
         Spacer(modifier = Modifier.height(40.dp))
 
-        // 8. 고객센터
         CustomerCenterSection()
         Spacer(modifier = Modifier.height(100.dp))
     }

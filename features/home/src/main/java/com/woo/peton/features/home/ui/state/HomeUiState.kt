@@ -11,7 +11,8 @@ sealed interface HomeUiState {
     data class Success(
         val myPet: List<MyPet>,
         val missingPets: List<MissingPet>,
-        val fosterPets: List<MissingPet>,
+        val ProtectionPets: List<MissingPet>,
+        val spottedPets: List<MissingPet>,
         val promoBanner: Banner?,
         val detectives: List<Detective>
     ) : HomeUiState
