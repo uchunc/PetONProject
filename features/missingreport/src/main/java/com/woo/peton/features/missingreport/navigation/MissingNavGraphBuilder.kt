@@ -18,7 +18,6 @@ fun NavGraphBuilder.missingNavBuilder(navController: NavHostController) {
                 navController.navigate(MissingNavigationRoute.PostingScreen)
             },
             onNavigateToDetail = { petId ->
-                // 상세 화면 라우트로 이동 (ID 전달)
                 navController.navigate(MissingNavigationRoute.DetailScreen(petId))
             }
         )

@@ -33,6 +33,7 @@ import com.woo.peton.features.home.ui.state.HomeUiState
 fun HomeTabScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     onNavigateToPetDetail: (String) -> Unit,
+    onNavigateToReportPetDetail: (String) -> Unit,
     onNavigateToReportList: (ReportType) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -50,6 +51,7 @@ fun HomeTabScreen(
                 HomeContent(
                     state = state,
                     onPetClick = onNavigateToPetDetail,
+                    onReportPetClick = onNavigateToReportPetDetail,
                     onReportViewAllClick = onNavigateToReportList
                 )
             }
@@ -60,14 +62,14 @@ fun HomeTabScreen(
             }
         }
     }
-
 }
 
 @Composable
 private fun HomeContent(
     state: HomeUiState.Success,
     onPetClick: (String) -> Unit,
-    onReportViewAllClick: (ReportType) -> Unit
+    onReportPetClick: (String) -> Unit,
+    onReportViewAllClick: (ReportType) -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
 
@@ -94,21 +96,21 @@ private fun HomeContent(
         HomePetListSection(
             title = "주인을 찾고 있어요!",
             pets = state.missingPets,
-            onPetClick = onPetClick,
+            onPetClick = onReportPetClick,
             onViewAllClick = { onReportViewAllClick(ReportType.MISSING) }
         )
 
         HomePetListSection(
             title = "새 가족을 기다리는 임보 동물",
             pets = state.protectionPets,
-            onPetClick = onPetClick,
+            onPetClick = onReportPetClick,
             onViewAllClick = { onReportViewAllClick(ReportType.PROTECTION) }
         )
 
         HomePetListSection(
             title = "목격된 동물을 알려드려요",
             pets = state.spottedPets,
-            onPetClick = onPetClick,
+            onPetClick = onReportPetClick,
             onViewAllClick = { onReportViewAllClick(ReportType.SPOTTED) }
         )
 

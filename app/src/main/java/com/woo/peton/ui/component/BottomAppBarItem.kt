@@ -22,7 +22,7 @@ class BottomAppBarItem(
             BottomAppBarItem(
                 tabName = "실종/제보",
                 icon = R.drawable.siren,
-                destination = MissingNavigationRoute.MissingScreen
+                destination = MissingNavigationRoute.MissingScreen(null)
             ),
             BottomAppBarItem(
                 tabName = "채팅",

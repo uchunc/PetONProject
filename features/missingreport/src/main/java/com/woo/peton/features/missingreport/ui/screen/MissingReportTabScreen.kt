@@ -1,9 +1,20 @@
 package com.woo.peton.features.missingreport.ui.screen
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -14,8 +25,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.woo.peton.features.missingreport.MissingReportViewModel
 import com.woo.peton.features.missingreport.ui.items.ActionButtons
-import com.woo.peton.features.missingreport.ui.items.ReportMapArea
 import com.woo.peton.features.missingreport.ui.items.MissingReportBottomSheet
+import com.woo.peton.features.missingreport.ui.items.ReportMapArea
 import com.woo.peton.features.missingreport.ui.items.SearchBarAndFilter
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -25,7 +36,6 @@ fun MissingReportTabScreen(
     onNavigateToDetail: (String) -> Unit,
     onNavigateToWrite: () -> Unit
 ) {
-    // 1. 상태 수집
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val selectedPet by viewModel.selectedPet.collectAsStateWithLifecycle()
 
@@ -36,7 +46,6 @@ fun MissingReportTabScreen(
         )
     )
 
-    // 화면 크기 및 높이 계산
     val peekHeight = 140.dp
     val localDensity = LocalDensity.current
     val configuration = LocalConfiguration.current
@@ -45,10 +54,15 @@ fun MissingReportTabScreen(
     val sheetMaxHeight = screenHeight - topContentHeight
     val isSheetExpanded = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    LaunchedEffect(Unit) {
+        if (viewModel.isFromHome) {
+            scaffoldState.bottomSheetState.expand()
+        }
+    }
 
-        // [Layer 1] 지도 및 서랍
+    Box(modifier = Modifier.fillMaxSize()) {
         BottomSheetScaffold(
+            modifier = Modifier.fillMaxSize(),
             scaffoldState = scaffoldState,
             sheetPeekHeight = peekHeight,
             sheetShape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
@@ -56,7 +70,6 @@ fun MissingReportTabScreen(
             sheetShadowElevation = 10.dp,
             sheetDragHandle = null,
             sheetContent = {
-                // 🟢 [수정] 바텀시트에 상태와 콜백 전달
                 MissingReportBottomSheet(
                     height = sheetMaxHeight,
                     pets = uiState.currentPets,
@@ -69,28 +82,29 @@ fun MissingReportTabScreen(
                     }
                 )
             }
-        ) {
-            // 지도 영역
-            Box(modifier = Modifier.fillMaxSize()) {
+        ) { innerPadding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
                 ReportMapArea(
                     pets = uiState.currentPets,
+                    modifier = Modifier.fillMaxSize(),
                     onMarkerClick = { petId ->
-                        // 🟢 [구현] 마커 클릭 시 뷰모델에 선택 요청
                         viewModel.selectPet(petId)
                     }
                 )
             }
         }
 
-        // [Layer 2] 상단 검색바 & 필터
         SearchBarAndFilter(
             modifier = Modifier.align(Alignment.TopCenter),
             filters = uiState.filters,
-            onFilterToggle = { type -> viewModel.toggleFilter(type) },
+            onFilterToggle = { type -> viewModel.updateFilter(type) },
             onHeightMeasured = { heightPx -> with(localDensity) { heightPx.toDp() } }
         )
 
-        // [Layer 3] 우측 하단 버튼들
         ActionButtons(
             modifier = Modifier
                 .align(Alignment.BottomEnd)

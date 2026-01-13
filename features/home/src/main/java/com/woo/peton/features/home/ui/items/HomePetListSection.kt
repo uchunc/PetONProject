@@ -94,7 +94,6 @@ fun ViewAllCard(
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                // 원형 화살표 아이콘
                 Box(
                     modifier = Modifier
                         .size(40.dp)
@@ -105,7 +104,7 @@ fun ViewAllCard(
                     Icon(
                         imageVector = ImageVector.vectorResource(R.drawable.arrowr),
                         contentDescription = "전체보기",
-                        tint = colorScheme.tertiary
+                        tint = colorScheme.onPrimary
                     )
                 }
                 Spacer(modifier = Modifier.height(12.dp))
