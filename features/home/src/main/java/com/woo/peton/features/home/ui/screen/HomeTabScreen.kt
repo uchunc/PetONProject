@@ -100,7 +100,7 @@ private fun HomeContent(
 
         HomePetListSection(
             title = "새 가족을 기다리는 임보 동물",
-            pets = state.ProtectionPets,
+            pets = state.protectionPets,
             onPetClick = onPetClick,
             onViewAllClick = { onReportViewAllClick(ReportType.PROTECTION) }
         )
