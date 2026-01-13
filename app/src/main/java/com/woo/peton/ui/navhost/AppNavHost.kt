@@ -24,7 +24,6 @@ fun AppNavHost(
         modifier = modifier
     ) {
         authNavBuilder(navController)
-
         homeNavBuilder(
             navController = navController,
             onNavigateToPetDetail = { petId ->
@@ -32,9 +31,11 @@ fun AppNavHost(
             },
             onNavigateToReportPetDetail = { petId ->
                 navController.navigate(MissingNavigationRoute.DetailScreen(petId))
+            },
+            onNavigateToReportList = { reportType ->
+                navController.navigate(MissingNavigationRoute.MissingScreen(filterType = reportType.name))
             }
         )
-
         chatNavBuilder(navController)
         missingNavBuilder(navController)
         myPageNavBuilder(navController)

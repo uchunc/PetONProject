@@ -2,7 +2,6 @@ package com.woo.peton.core.ui.navigation
 
 import kotlinx.serialization.Serializable
 
-
 @Serializable
 sealed interface ChattingNavigationRoute : PetOnNavigation {
     @Serializable
@@ -18,7 +17,9 @@ sealed interface HomeNavigationRoute : PetOnNavigation {
 @Serializable
 sealed interface MissingNavigationRoute : PetOnNavigation {
     @Serializable
-    data object MissingScreen : MissingNavigationRoute
+    data class MissingScreen(
+        val filterType: String? = null
+    ) : MissingNavigationRoute
     @Serializable
     data class DetailScreen(val petId: String) : MissingNavigationRoute
     @Serializable
