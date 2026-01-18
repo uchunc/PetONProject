@@ -1,9 +1,8 @@
 package com.woo.peton.core.data.impl
 
 import com.woo.peton.core.data.datasource.AuthDataSource
+import com.woo.peton.core.data.mapper.toDto
 import com.woo.peton.core.data.remote.dto.UserDto
-import com.woo.peton.core.data.remote.dto.toDomain
-import com.woo.peton.core.data.remote.dto.toDto
 import com.woo.peton.domain.model.MyPet
 import com.woo.peton.domain.model.User
 import com.woo.peton.domain.repository.AuthRepository
@@ -12,6 +11,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import toDomain
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
