@@ -1,23 +1,26 @@
 package com.woo.peton.core.data.impl
 
-import com.google.firebase.Timestamp
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import com.woo.peton.core.data.datasource.AuthDataSource
+import com.woo.peton.core.data.dto.UserDto
+import com.woo.peton.core.data.dto.toDomain
 import com.woo.peton.core.data.dto.toDto
 import com.woo.peton.domain.model.MyPet
 import com.woo.peton.domain.model.User
 import com.woo.peton.domain.repository.AuthRepository
-import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
-    private val auth: FirebaseAuth,
-    private val firestore: FirebaseFirestore
+    private val dataSource: AuthDataSource
 ) : AuthRepository {
 
     override suspend fun signIn(email: String, pw: String): Result<Boolean> {
         return try {
-            auth.signInWithEmailAndPassword(email, pw).await()
+            dataSource.signIn(email, pw)
             Result.success(true)
         } catch (e: Exception) {
             Result.failure(e)
@@ -32,63 +35,40 @@ class AuthRepositoryImpl @Inject constructor(
         petInfo: MyPet
     ): Result<Boolean> {
         return try {
-            // 1. Firebase Auth에 계정 생성
-            val authResult = auth.createUserWithEmailAndPassword(email, pw).await()
-            val uid = authResult.user?.uid ?: throw Exception("UID 생성 실패")
+            val uid = dataSource.createAccount(email, pw)
 
-            // 2. Firestore - Users 컬렉션에 사용자 기본 정보 저장
-            val userMap = hashMapOf(
-                "uid" to uid,
-                "email" to email,
-                "name" to name,
-                "phone" to phone,
-                "createdAt" to Timestamp.now()
+            val userDto = UserDto(
+                uid = uid,
+                email = email,
+                name = name,
+                phoneNumber = phone
             )
-            firestore.collection("users").document(uid).set(userMap).await()
+            dataSource.saveUserInfo(userDto)
 
-            // 3. Firestore - MyPets 서브 컬렉션에 펫 정보 저장
-            // (이미지 업로드는 일단 제외하고 URL이 비어있다고 가정)
-            val petDto = petInfo.copy(ownerId = uid).toDto() // toDto()는 이전에 만든 매퍼 사용
-
-            firestore.collection("users").document(uid)
-                .collection("my_pets")
-                .add(petDto)
-                .await()
+            val petDto = petInfo.copy(ownerId = uid).toDto()
+            dataSource.savePetInfo(uid, petDto)
 
             Result.success(true)
         } catch (e: Exception) {
-            // 실패 시 생성된 계정이 있다면 삭제하는 롤백 로직이 있으면 좋지만, 일단 에러 반환
-            e.printStackTrace()
             Result.failure(e)
         }
     }
 
-    override suspend fun getUserProfile(): Result<User> {  // flow로 바꾸기?
-        return try {
-            val uid = auth.currentUser?.uid ?: throw Exception("로그인이 필요합니다.")
-            val snapshot = firestore.collection("users").document(uid).get().await()
+    override fun getUserProfile(): Flow<User?> {
+        val uid = dataSource.getCurrentUserUid()
 
-            if (snapshot.exists()) {
-                val user = User(
-                    uid = uid,
-                    name = snapshot.getString("name") ?: "",
-                    email = snapshot.getString("email") ?: "",
-                    phoneNumber = snapshot.getString("phone") ?: ""
-                )
-                Result.success(user)
-            } else {
-                Result.failure(Exception("사용자 정보를 찾을 수 없습니다."))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+        uid ?: return flowOf(null)
+
+        return dataSource.getUserInfoFlow(uid)
+            .map { dto -> dto?.toDomain() }
+            .flowOn(Dispatchers.IO)
     }
 
     override fun signOut() {
-        auth.signOut()
+        dataSource.signOut()
     }
 
     override fun isUserLoggedIn(): Boolean {
-        return auth.currentUser != null
+        return dataSource.isUserLoggedIn()
     }
 }
