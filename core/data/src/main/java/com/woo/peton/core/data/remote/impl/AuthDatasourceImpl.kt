@@ -3,8 +3,8 @@ package com.woo.peton.core.data.remote.impl
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.woo.peton.core.data.datasource.AuthDataSource
-import com.woo.peton.core.data.dto.MyPetDto
-import com.woo.peton.core.data.dto.UserDto
+import com.woo.peton.core.data.remote.dto.MyPetDto
+import com.woo.peton.core.data.remote.dto.UserDto
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow

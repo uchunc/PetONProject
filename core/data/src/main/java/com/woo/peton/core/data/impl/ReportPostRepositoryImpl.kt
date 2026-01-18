@@ -2,9 +2,9 @@ package com.woo.peton.core.data.impl
 
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import com.woo.peton.core.data.dto.ReportPostDto
-import com.woo.peton.core.data.dto.toDomain
-import com.woo.peton.core.data.dto.toDto
+import com.woo.peton.core.data.remote.dto.ReportPostDto
+import com.woo.peton.core.data.remote.dto.toDomain
+import com.woo.peton.core.data.remote.dto.toDto
 import com.woo.peton.domain.model.MissingPet
 import com.woo.peton.domain.model.ReportType
 import com.woo.peton.domain.repository.ReportPostRepository

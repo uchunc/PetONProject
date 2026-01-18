@@ -2,9 +2,9 @@ package com.woo.peton.core.data.impl
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.woo.peton.core.data.dto.toDomain
-import com.woo.peton.core.data.dto.MyPetDto
-import com.woo.peton.core.data.dto.toDto
+import com.woo.peton.core.data.remote.dto.toDomain
+import com.woo.peton.core.data.remote.dto.MyPetDto
+import com.woo.peton.core.data.remote.dto.toDto
 import com.woo.peton.domain.model.MyPet
 import com.woo.peton.domain.repository.MyPetRepository
 import kotlinx.coroutines.tasks.await
