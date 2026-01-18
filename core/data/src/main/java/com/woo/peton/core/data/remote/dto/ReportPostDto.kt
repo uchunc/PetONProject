@@ -1,4 +1,4 @@
-package com.woo.peton.core.data.dto
+package com.woo.peton.core.data.remote.dto
 
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentId
@@ -7,6 +7,7 @@ import com.woo.peton.core.utils.toLocalDateTime
 import com.woo.peton.core.utils.toTimestamp
 import com.woo.peton.domain.model.MissingPet
 import com.woo.peton.domain.model.ReportType
+import java.time.LocalDateTime
 
 data class ReportPostDto(
     @DocumentId
@@ -68,7 +69,7 @@ fun MissingPet.toDto(): ReportPostDto {
         geoLocation = GeoPoint(this.latitude, this.longitude),
         locationDescription = this.locationDescription,
         occurrenceDate = this.occurrenceDate.toTimestamp(),
-        createdAt = if (this.createdAt == java.time.LocalDateTime.MIN) com.google.firebase.Timestamp.now() else this.createdAt.toTimestamp(),
+        createdAt = if (this.createdAt == LocalDateTime.MIN) Timestamp.now() else this.createdAt.toTimestamp(),
         authorName = this.authorName,
         authorId = this.authorId,
         commentCount = this.commentCount,

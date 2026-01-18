@@ -1,9 +1,9 @@
 package com.woo.peton.core.data.impl
 
 import com.woo.peton.core.data.datasource.AuthDataSource
-import com.woo.peton.core.data.dto.UserDto
-import com.woo.peton.core.data.dto.toDomain
-import com.woo.peton.core.data.dto.toDto
+import com.woo.peton.core.data.remote.dto.UserDto
+import com.woo.peton.core.data.remote.dto.toDomain
+import com.woo.peton.core.data.remote.dto.toDto
 import com.woo.peton.domain.model.MyPet
 import com.woo.peton.domain.model.User
 import com.woo.peton.domain.repository.AuthRepository

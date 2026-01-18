@@ -1,4 +1,4 @@
-package com.woo.peton.core.data.dto
+package com.woo.peton.core.data.remote.dto
 
 import com.woo.peton.domain.model.MyPet
 

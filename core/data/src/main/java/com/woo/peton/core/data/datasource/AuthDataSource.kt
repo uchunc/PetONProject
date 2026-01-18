@@ -2,8 +2,8 @@
 
 package com.woo.peton.core.data.datasource
 
-import com.woo.peton.core.data.dto.MyPetDto
-import com.woo.peton.core.data.dto.UserDto
+import com.woo.peton.core.data.remote.dto.MyPetDto
+import com.woo.peton.core.data.remote.dto.UserDto
 import kotlinx.coroutines.flow.Flow
 
 interface AuthDataSource {
