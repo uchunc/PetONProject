@@ -1,5 +1,6 @@
-package com.woo.peton.core.data.repository.impl
+package com.woo.peton.core.data.impl
 
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.woo.peton.core.data.dto.toDto
@@ -41,7 +42,7 @@ class AuthRepositoryImpl @Inject constructor(
                 "email" to email,
                 "name" to name,
                 "phone" to phone,
-                "createdAt" to com.google.firebase.Timestamp.now()
+                "createdAt" to Timestamp.now()
             )
             firestore.collection("users").document(uid).set(userMap).await()
 
@@ -62,7 +63,7 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getUserProfile(): Result<User> {
+    override suspend fun getUserProfile(): Result<User> {  // flow로 바꾸기?
         return try {
             val uid = auth.currentUser?.uid ?: throw Exception("로그인이 필요합니다.")
             val snapshot = firestore.collection("users").document(uid).get().await()

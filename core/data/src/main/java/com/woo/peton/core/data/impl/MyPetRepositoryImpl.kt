@@ -1,4 +1,4 @@
-package com.woo.peton.core.data.repository.impl
+package com.woo.peton.core.data.impl
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore

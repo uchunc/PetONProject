@@ -1,4 +1,4 @@
-package com.woo.peton.core.data.repository.impl
+package com.woo.peton.core.data.impl
 
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
