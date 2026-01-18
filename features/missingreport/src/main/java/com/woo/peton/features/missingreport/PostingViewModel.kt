@@ -12,6 +12,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import javax.inject.Inject
@@ -48,12 +49,13 @@ class PostingViewModel @Inject constructor(
             _uiState.value = PostingUiState.Loading
 
             // 1. 작성자 정보 가져오기
-            val userResult = authRepository.getUserProfile()
-            if (userResult.isFailure) {
+            val user = authRepository.getUserProfile().first()
+
+            if (user == null) {
+                // 유저 정보가 없으면 에러 처리
                 _uiState.value = PostingUiState.Error("로그인 정보가 확인되지 않습니다.")
                 return@launch
             }
-            val user = userResult.getOrThrow()
 
             // ⚠️ 실제 앱에서는 여기서 Firebase Storage에 selectedImageUri를 업로드하고
             // 다운로드 받은 URL을 imageUrl에 넣어야 합니다.
@@ -65,7 +67,6 @@ class PostingViewModel @Inject constructor(
                 "https://placedog.net/500?random=${System.currentTimeMillis()}"
             }
 
-            // 2. MissingPet 객체 생성
             val newPost = MissingPet(
                 reportType = reportType.value,
                 title = title.value,
@@ -76,7 +77,7 @@ class PostingViewModel @Inject constructor(
                 content = content.value,
 
                 imageUrl = finalImageUrl,
-                latitude = latitude.value,     // 🟢 선택된 좌표 사용
+                latitude = latitude.value,
                 longitude = longitude.value,
 
                 occurrenceDate = LocalDateTime.now(),
@@ -84,8 +85,6 @@ class PostingViewModel @Inject constructor(
                 authorName = user.name,
                 authorId = user.uid
             )
-
-            // 3. Repository 호출
             val result = reportPostRepository.addPost(newPost)
 
             if (result.isSuccess) {

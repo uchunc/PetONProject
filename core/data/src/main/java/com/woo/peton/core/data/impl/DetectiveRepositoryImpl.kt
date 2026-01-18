@@ -1,4 +1,4 @@
-package com.woo.peton.core.data.repository.impl
+package com.woo.peton.core.data.impl
 
 import com.woo.peton.domain.model.Detective
 import com.woo.peton.core.ui.R

@@ -1,7 +1,15 @@
 package com.woo.peton.core.data.di
 
-import com.woo.peton.core.data.repository.impl.*
-import com.woo.peton.domain.repository.*
+import com.woo.peton.core.data.impl.AuthRepositoryImpl
+import com.woo.peton.core.data.impl.BannerRepositoryImpl
+import com.woo.peton.core.data.impl.DetectiveRepositoryImpl
+import com.woo.peton.core.data.impl.MyPetRepositoryImpl
+import com.woo.peton.core.data.impl.ReportPostRepositoryImpl
+import com.woo.peton.domain.repository.AuthRepository
+import com.woo.peton.domain.repository.BannerRepository
+import com.woo.peton.domain.repository.DetectiveRepository
+import com.woo.peton.domain.repository.MyPetRepository
+import com.woo.peton.domain.repository.ReportPostRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

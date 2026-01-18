@@ -1,4 +1,4 @@
-package com.woo.peton.core.data.repository.impl
+package com.woo.peton.core.data.impl
 
 import androidx.compose.ui.graphics.Color
 import com.woo.peton.domain.model.Banner
