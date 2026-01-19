@@ -2,6 +2,7 @@ package com.woo.peton.features.mypage
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.woo.peton.domain.model.User
 import com.woo.peton.domain.repository.AuthRepository
 import com.woo.peton.domain.repository.MyPetRepository
 import com.woo.peton.features.mypage.ui.state.MyPageUiState
@@ -10,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -30,42 +32,36 @@ class MyPageViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
 
-            // 유저 정보 가져오기
-            authRepository.getUserProfile()
-                .catch { e ->
-                    _uiState.update { currentState ->
-                        currentState.copy(
-                            isLoading = false,
-                            errorMessage = "사용자 정보를 불러오지 못했습니다. (${e.message})"
-                        )
-                    }
+            combine(
+                authRepository.getUserProfile(),
+                myPetRepository.getAllMyPets()
+            ) { user, pets ->
+                if (user != null) {
+                    MyPageUiState(
+                        isLoading = false,
+                        user = user,
+                        pets = pets,
+                        errorMessage = null
+                    )
+                } else {
+                    MyPageUiState(
+                        isLoading = false,
+                        user = User(),
+                        pets = emptyList(),
+                        errorMessage = "로그인이 필요합니다."
+                    )
                 }
-                .collect { user ->
-                    if (user != null) {
-                        try {
-                            val pets = myPetRepository.getAllMyPets()
-
-                            // 4. 상태 업데이트
-                            _uiState.update { currentState ->
-                                currentState.copy(
-                                    isLoading = false,
-                                    user = user,
-                                    pets = pets,
-                                    errorMessage = null
-                                )
-                            }
-                        } catch (e: Exception) {
-                            _uiState.update { it.copy(isLoading = false, errorMessage = "펫 정보를 불러오는데 실패했습니다.") }
-                        }
-                    } else {
-                        _uiState.update { currentState ->
-                            currentState.copy(
-                                isLoading = false,
-                                errorMessage = "로그인이 필요합니다."
-                            )
-                        }
-                    }
+            }.catch { e ->
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = "데이터를 불러오는 중 오류가 발생했습니다. (${e.message})"
+                    )
                 }
+            }
+            .collect { newState ->
+                _uiState.value = newState
+            }
         }
     }
 
