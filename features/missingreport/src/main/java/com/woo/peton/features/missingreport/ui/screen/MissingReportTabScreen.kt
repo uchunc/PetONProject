@@ -36,7 +36,6 @@ fun MissingReportTabScreen(
     onNavigateToWrite: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val selectedPet by viewModel.selectedPet.collectAsStateWithLifecycle()
 
     val scaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = rememberStandardBottomSheetState(
@@ -74,7 +73,7 @@ fun MissingReportTabScreen(
                 ) {
                     MissingReportBottomSheet(
                         pets = uiState.currentPets,
-                        selectedPet = selectedPet,
+                        selectedPet = uiState.selectedPet,
                         onItemClick = { selectedPetId ->
                             onNavigateToDetail(selectedPetId)
                         },
