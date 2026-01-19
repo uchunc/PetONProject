@@ -42,7 +42,7 @@ class HomeViewModel @Inject constructor(
     }
 
     val uiState: StateFlow<HomeUiState> = combine(
-        flow { emit(myPetRepository.getAllMyPets()) },
+        myPetRepository.getAllMyPets(),
 
         petPostsFlow,
 
