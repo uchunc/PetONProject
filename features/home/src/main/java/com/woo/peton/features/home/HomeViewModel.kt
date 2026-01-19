@@ -21,9 +21,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val myPetRepository: MyPetRepository,
+    myPetRepository: MyPetRepository,
+    reportPostRepository: ReportPostRepository,
     private val bannerRepository: BannerRepository,
-    private val reportPostRepository: ReportPostRepository,
     private val detectiveRepository: DetectiveRepository
 ) : ViewModel() {
 
