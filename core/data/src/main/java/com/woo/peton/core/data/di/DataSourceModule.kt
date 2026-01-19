@@ -1,7 +1,9 @@
 package com.woo.peton.core.data.di
 
 import com.woo.peton.core.data.datasource.AuthDataSource
+import com.woo.peton.core.data.datasource.ReportDataSource
 import com.woo.peton.core.data.remote.impl.AuthRemoteDataSourceImpl
+import com.woo.peton.core.data.remote.impl.ReportRemoteDataSourceImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -11,10 +13,15 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class DataSourceModule {
-
     @Binds
     @Singleton
     abstract fun bindAuthDataSource(
         impl: AuthRemoteDataSourceImpl
     ): AuthDataSource
+
+    @Binds
+    @Singleton
+    abstract fun bindReportDataSource(
+        impl: ReportRemoteDataSourceImpl
+    ): ReportDataSource
 }
