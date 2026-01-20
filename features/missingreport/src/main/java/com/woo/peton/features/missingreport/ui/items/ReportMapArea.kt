@@ -5,7 +5,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -15,7 +20,11 @@ import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.*
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.MarkerComposable
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberCameraPositionState
 import com.woo.peton.core.ui.R
 import com.woo.peton.domain.model.ReportPost
 
@@ -25,16 +34,12 @@ fun ReportMapArea(
     modifier: Modifier = Modifier,
     onMarkerClick: (String) -> Unit
 ) {
-    // 1. 초기 카메라 위치 (서울 시청)
     val defaultSeoul = LatLng(37.5665, 126.9780)
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(defaultSeoul, 15f)
     }
 
-    // 2. 지도가 로드되었는지 확인하는 상태
     var isMapLoaded by remember { mutableStateOf(false) }
-
-    // 3. 데이터가 있고 + 지도가 로드되었을 때만 카메라 이동
     LaunchedEffect(pets, isMapLoaded) {
         if (isMapLoaded && pets.isNotEmpty()) {
             val firstPet = pets.first()
@@ -48,7 +53,6 @@ fun ReportMapArea(
                     )
                 )
             } catch (e: Exception) {
-                // 초기화 이슈 등으로 실패 시 로그 처리
                 e.printStackTrace()
             }
         }
@@ -60,19 +64,16 @@ fun ReportMapArea(
             cameraPositionState = cameraPositionState,
             uiSettings = MapUiSettings(
                 zoomControlsEnabled = false,
-                myLocationButtonEnabled = false, // 내 위치 버튼 (권한 필요)
+                myLocationButtonEnabled = false,
                 compassEnabled = false,
                 mapToolbarEnabled = false
             ),
             onMapLoaded = {
-                // 🟢 지도가 완전히 로드되었음을 알림
                 isMapLoaded = true
             },
             onMapClick = {
-                // 필요 시 구현
             }
         ) {
-            // 마커 생성
             pets.forEach { pet ->
                 val petLocation = LatLng(pet.latitude, pet.longitude)
 
@@ -95,7 +96,6 @@ fun ReportMapArea(
             }
         }
 
-        // 지도가 로딩 중일 때 로딩 인디케이터 표시 (선택사항)
         if (!isMapLoaded) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         }

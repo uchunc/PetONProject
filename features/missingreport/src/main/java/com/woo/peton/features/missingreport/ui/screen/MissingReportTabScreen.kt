@@ -47,8 +47,6 @@ fun MissingReportTabScreen(
     val localDensity = LocalDensity.current
     var topContentHeight by remember { mutableStateOf(0.dp) }
 
-    val isSheetExpanded = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
-
     LaunchedEffect(Unit) {
         if (viewModel.isFromHome) {
             scaffoldState.bottomSheetState.expand()
@@ -69,7 +67,7 @@ fun MissingReportTabScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(top = topContentHeight + 8.dp)
+                        .padding(top = topContentHeight)
                 ) {
                     MissingReportBottomSheet(
                         pets = uiState.currentPets,
@@ -112,7 +110,6 @@ fun MissingReportTabScreen(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = 16.dp, bottom = 156.dp),
-            showLocationButton = !isSheetExpanded,
             onPostingClick = onNavigateToWrite,
             onFavoriteClick = {},
             onLocationClick = {}

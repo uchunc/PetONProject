@@ -1,8 +1,5 @@
 package com.woo.peton.features.missingreport.ui.items
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
@@ -20,7 +17,6 @@ import com.woo.peton.core.ui.component.CirclePlaceholder
 @Composable
 fun ActionButtons(
     modifier: Modifier = Modifier,
-    showLocationButton: Boolean,
     onPostingClick: () -> Unit,
     onFavoriteClick: () -> Unit,
     onLocationClick: () -> Unit
@@ -54,22 +50,17 @@ fun ActionButtons(
             )
         }
 
-        AnimatedVisibility(
-            visible = showLocationButton,
-            enter = fadeIn(),
-            exit = fadeOut()
+        CirclePlaceholder(
+            modifier = Modifier.size(48.dp),
+            color = Color.White,
+            onClick = onLocationClick
         ) {
-            CirclePlaceholder(
-                modifier = Modifier.size(48.dp),
-                color = Color.White,
-                onClick = onLocationClick
-            ) {
-                Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.current_location),
-                    contentDescription = "현위치",
-                    tint = Color.Gray
-                )
-            }
+            Icon(
+                imageVector = ImageVector.vectorResource(id = R.drawable.current_location),
+                contentDescription = "현위치",
+                tint = Color.Gray
+            )
         }
+
     }
 }
