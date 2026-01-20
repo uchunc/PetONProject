@@ -2,7 +2,7 @@ package com.woo.peton.features.home.ui.state
 
 import com.woo.peton.domain.model.Banner
 import com.woo.peton.domain.model.Detective
-import com.woo.peton.domain.model.MissingPet
+import com.woo.peton.domain.model.ReportPost
 import com.woo.peton.domain.model.MyPet
 
 sealed interface HomeUiState {
@@ -10,9 +10,9 @@ sealed interface HomeUiState {
 
     data class Success(
         val myPet: List<MyPet>,
-        val missingPets: List<MissingPet>,
-        val protectionPets: List<MissingPet>,
-        val spottedPets: List<MissingPet>,
+        val reportPosts: List<ReportPost>,
+        val protectionPets: List<ReportPost>,
+        val spottedPets: List<ReportPost>,
         val promoBanner: Banner?,
         val detectives: List<Detective>
     ) : HomeUiState

@@ -17,11 +17,11 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 import com.woo.peton.core.ui.R
-import com.woo.peton.domain.model.MissingPet
+import com.woo.peton.domain.model.ReportPost
 
 @Composable
 fun ReportMapArea(
-    pets: List<MissingPet>,
+    pets: List<ReportPost>,
     modifier: Modifier = Modifier,
     onMarkerClick: (String) -> Unit
 ) {

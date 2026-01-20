@@ -10,11 +10,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.woo.peton.core.ui.component.PetCard
-import com.woo.peton.domain.model.MissingPet
+import com.woo.peton.domain.model.ReportPost
 
 @Composable
 fun ReportGridContent(
-    pets: List<MissingPet>,
+    pets: List<ReportPost>,
     onItemClick: (String) -> Unit
 ) {
     LazyVerticalGrid(

@@ -3,7 +3,7 @@ package com.woo.peton.features.missingreport
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.woo.peton.domain.model.MissingPet
+import com.woo.peton.domain.model.ReportPost
 import com.woo.peton.domain.model.ReportType
 import com.woo.peton.domain.repository.ReportPostRepository
 import com.woo.peton.features.missingreport.ui.state.MissingReportUiState
@@ -24,7 +24,7 @@ class MissingReportViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val _filters = MutableStateFlow(ReportType.entries.associateWith { true })
-    private val _selectedPet = MutableStateFlow<MissingPet?>(null)
+    private val _selectedPet = MutableStateFlow<ReportPost?>(null)
 
     val isFromHome: Boolean = savedStateHandle.get<String>("filterType") != null
 

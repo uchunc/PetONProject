@@ -3,7 +3,7 @@ package com.woo.peton.features.missingreport
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.woo.peton.domain.model.MissingPet
+import com.woo.peton.domain.model.ReportPost
 import com.woo.peton.domain.model.ReportType
 import com.woo.peton.domain.repository.AuthRepository
 import com.woo.peton.domain.repository.ReportPostRepository
@@ -67,7 +67,7 @@ class PostingViewModel @Inject constructor(
                 "https://placedog.net/500?random=${System.currentTimeMillis()}"
             }
 
-            val newPost = MissingPet(
+            val newPost = ReportPost(
                 reportType = reportType.value,
                 title = title.value,
                 breed = breed.value,

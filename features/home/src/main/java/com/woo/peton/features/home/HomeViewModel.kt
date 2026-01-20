@@ -2,7 +2,7 @@ package com.woo.peton.features.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.woo.peton.domain.model.MissingPet
+import com.woo.peton.domain.model.ReportPost
 import com.woo.peton.domain.model.ReportType
 import com.woo.peton.domain.repository.BannerRepository
 import com.woo.peton.domain.repository.DetectiveRepository
@@ -28,9 +28,9 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
 
     private data class PetPosts(
-        val missing: List<MissingPet>,
-        val protection: List<MissingPet>,
-        val spotted: List<MissingPet>
+        val missing: List<ReportPost>,
+        val protection: List<ReportPost>,
+        val spotted: List<ReportPost>
     )
 
     private val petPostsFlow = combine(
@@ -53,7 +53,7 @@ class HomeViewModel @Inject constructor(
     ) { myPets, posts, promoBanner, detectives ->
         HomeUiState.Success(
             myPet = myPets,
-            missingPets = posts.missing,
+            reportPosts = posts.missing,
             protectionPets = posts.protection,
             spottedPets = posts.spotted,
             promoBanner = promoBanner,

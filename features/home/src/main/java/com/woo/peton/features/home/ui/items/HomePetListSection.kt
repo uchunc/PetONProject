@@ -34,12 +34,12 @@ import androidx.compose.ui.unit.dp
 import com.woo.peton.core.ui.R
 import com.woo.peton.core.ui.component.PetCard
 import com.woo.peton.core.ui.component.SectionHeader
-import com.woo.peton.domain.model.MissingPet
+import com.woo.peton.domain.model.ReportPost
 
 @Composable
 fun HomePetListSection(
     title: String,
-    pets: List<MissingPet>,
+    pets: List<ReportPost>,
     onPetClick: (String) -> Unit,
     onViewAllClick: () -> Unit
 ) {

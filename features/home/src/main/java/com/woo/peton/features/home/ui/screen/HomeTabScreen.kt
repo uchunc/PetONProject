@@ -95,7 +95,7 @@ private fun HomeContent(
 
         HomePetListSection(
             title = "주인을 찾고 있어요!",
-            pets = state.missingPets,
+            pets = state.reportPosts,
             onPetClick = onReportPetClick,
             onViewAllClick = { onReportViewAllClick(ReportType.MISSING) }
         )

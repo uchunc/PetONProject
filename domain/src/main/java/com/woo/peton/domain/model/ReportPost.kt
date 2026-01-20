@@ -2,7 +2,7 @@ package com.woo.peton.domain.model
 
 import java.time.LocalDateTime
 
-data class MissingPet(
+data class ReportPost(
     val id: String = "",
     val petID : String = "",
     val reportType: ReportType,

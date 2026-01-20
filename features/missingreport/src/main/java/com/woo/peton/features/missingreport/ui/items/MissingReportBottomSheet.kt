@@ -17,14 +17,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.woo.peton.domain.model.MissingPet
+import com.woo.peton.domain.model.ReportPost
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MissingReportBottomSheet(
     modifier: Modifier = Modifier,
-    pets: List<MissingPet>,
-    selectedPet: MissingPet?,
+    pets: List<ReportPost>,
+    selectedPet: ReportPost?,
     onItemClick: (String) -> Unit,
     onBackToList: () -> Unit
 ) {

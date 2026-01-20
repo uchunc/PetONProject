@@ -5,12 +5,12 @@ import com.google.firebase.firestore.GeoPoint
 import com.woo.peton.core.data.remote.dto.ReportPostDto
 import com.woo.peton.core.utils.toLocalDateTime
 import com.woo.peton.core.utils.toTimestamp
-import com.woo.peton.domain.model.MissingPet
+import com.woo.peton.domain.model.ReportPost
 import com.woo.peton.domain.model.ReportType
 import java.time.LocalDateTime
 
-fun ReportPostDto.toDomain(): MissingPet {
-    return MissingPet(
+fun ReportPostDto.toDomain(): ReportPost {
+    return ReportPost(
         id = this.id,
         reportType = try { ReportType.valueOf(this.reportType) } catch (e: Exception) { ReportType.MISSING },
         title = this.title,
@@ -31,7 +31,7 @@ fun ReportPostDto.toDomain(): MissingPet {
     )
 }
 
-fun MissingPet.toDto(): ReportPostDto {
+fun ReportPost.toDto(): ReportPostDto {
     return ReportPostDto(
         reportType = this.reportType.name,
         title = this.title,

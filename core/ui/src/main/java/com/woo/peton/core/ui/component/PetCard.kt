@@ -17,13 +17,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.woo.peton.domain.model.MissingPet
+import com.woo.peton.domain.model.ReportPost
 import com.woo.peton.core.utils.toFormattedString
 import com.woo.peton.core.ui.R
 
 @Composable
 fun PetCard(
-    pet: MissingPet,
+    pet: ReportPost,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
