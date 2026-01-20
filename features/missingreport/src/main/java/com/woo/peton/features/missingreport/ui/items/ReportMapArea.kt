@@ -78,7 +78,7 @@ fun ReportMapArea(
                 val petLocation = LatLng(pet.latitude, pet.longitude)
 
                 MarkerComposable(
-                    keys = arrayOf(pet.id, pet.reportType),
+                    keys = arrayOf<Any>(pet.id, pet.reportType),
                     state = MarkerState(position = petLocation),
                     title = pet.title,
                     onClick = {

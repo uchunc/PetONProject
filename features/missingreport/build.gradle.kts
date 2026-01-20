@@ -53,6 +53,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.coil.compose)
+    implementation(libs.advanced.bottomsheet)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.bundles.compose.libs)

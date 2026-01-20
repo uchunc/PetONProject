@@ -1,13 +1,11 @@
 package com.woo.peton.features.missingreport.ui.screen
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.SheetValue
-import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -17,7 +15,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -27,8 +24,15 @@ import com.woo.peton.features.missingreport.ui.items.ActionButtons
 import com.woo.peton.features.missingreport.ui.items.MissingReportBottomSheet
 import com.woo.peton.features.missingreport.ui.items.ReportMapArea
 import com.woo.peton.features.missingreport.ui.items.SearchBarAndFilter
+import io.morfly.compose.bottomsheet.material3.BottomSheetScaffold
+import io.morfly.compose.bottomsheet.material3.rememberBottomSheetScaffoldState
+import io.morfly.compose.bottomsheet.material3.rememberBottomSheetState
 
-@OptIn(ExperimentalMaterial3Api::class)
+enum class SheetDetent {
+    Collapsed, Half, Expanded
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun MissingReportTabScreen(
     viewModel: MissingReportViewModel = hiltViewModel(),
@@ -36,20 +40,27 @@ fun MissingReportTabScreen(
     onNavigateToWrite: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-    val scaffoldState = rememberBottomSheetScaffoldState(
-        bottomSheetState = rememberStandardBottomSheetState(
-            initialValue = SheetValue.PartiallyExpanded,
-            skipHiddenState = true
-        )
-    )
-
     val localDensity = LocalDensity.current
     var topContentHeight by remember { mutableStateOf(0.dp) }
 
+    val sheetState = rememberBottomSheetState(
+        initialValue = SheetDetent.Collapsed,
+        defineValues = {
+            SheetDetent.Collapsed at height(140.dp)
+            SheetDetent.Half at height(percent = 55)
+            if (topContentHeight > 0.dp) {
+                SheetDetent.Expanded at offset(dp = topContentHeight + 48.dp)
+            } else {
+                SheetDetent.Expanded at height(percent = 90)
+            }
+        }
+    )
+
+    val scaffoldState = rememberBottomSheetScaffoldState(sheetState)
+
     LaunchedEffect(Unit) {
         if (viewModel.isFromHome) {
-            scaffoldState.bottomSheetState.expand()
+            sheetState.animateTo(SheetDetent.Half)
         }
     }
 
@@ -57,36 +68,20 @@ fun MissingReportTabScreen(
         BottomSheetScaffold(
             modifier = Modifier.fillMaxSize(),
             scaffoldState = scaffoldState,
-            sheetPeekHeight = 140.dp,
-
-            sheetContainerColor = Color.Transparent,
-            sheetShadowElevation = 0.dp,
-            sheetDragHandle = null,
-            sheetShape = RectangleShape,
+            sheetShape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
+            sheetContainerColor = Color.White,
+            sheetTonalElevation = 0.dp,
+            sheetShadowElevation = 10.dp,
             sheetContent = {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = topContentHeight)
-                ) {
-                    MissingReportBottomSheet(
-                        pets = uiState.currentPets,
-                        selectedPet = uiState.selectedPet,
-                        onItemClick = { selectedPetId ->
-                            onNavigateToDetail(selectedPetId)
-                        },
-                        onBackToList = {
-                            viewModel.clearSelection()
-                        }
-                    )
-                }
+                MissingReportBottomSheet(
+                    pets = uiState.currentPets,
+                    selectedPet = uiState.selectedPet,
+                    onItemClick = { selectedPetId -> onNavigateToDetail(selectedPetId) },
+                    onBackToList = { viewModel.clearSelection() }
+                )
             }
-        ) { innerPadding ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-            ) {
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
                 ReportMapArea(
                     pets = uiState.currentPets,
                     modifier = Modifier.fillMaxSize(),
