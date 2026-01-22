@@ -5,5 +5,5 @@ import androidx.annotation.DrawableRes
 data class Detective(
     val id: Long,
     val name: String,
-    @DrawableRes val imageRes: Int
+    @param:DrawableRes val imageRes: Int
 )
