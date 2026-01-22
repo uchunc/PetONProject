@@ -16,7 +16,7 @@ import com.woo.peton.features.mypage.navigation.myPageNavBuilder
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     NavHost(
         navController = navController,

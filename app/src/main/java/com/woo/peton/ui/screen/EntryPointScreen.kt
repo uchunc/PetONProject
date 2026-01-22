@@ -2,16 +2,30 @@ package com.woo.peton.ui.screen
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.woo.peton.core.ui.navigation.*
+import com.woo.peton.core.ui.component.LocalBottomPadding
+import com.woo.peton.core.ui.navigation.AuthNavigationRoute
+import com.woo.peton.core.ui.navigation.ChattingNavigationRoute
+import com.woo.peton.core.ui.navigation.HomeNavigationRoute
+import com.woo.peton.core.ui.navigation.MissingNavigationRoute
+import com.woo.peton.core.ui.navigation.MyPageNavigationRoute
 import com.woo.peton.ui.MainViewModel
-import com.woo.peton.ui.component.*
+import com.woo.peton.ui.component.BottomAppBarItem
+import com.woo.peton.ui.component.MainBottomBar
+import com.woo.peton.ui.component.MainTopBar
+import com.woo.peton.ui.component.TopBarData
+import com.woo.peton.ui.component.topBarAsRouteName
 import com.woo.peton.ui.navhost.AppNavHost
 
 private val MainTabRoutes = setOf(
@@ -39,16 +53,12 @@ fun EntryPointScreen(
 
     val isShowBars by remember(currentRoute) {
         derivedStateOf {
-            // 1. 현재 라우트가 메인 탭에 포함되는지 확인
             val isMainTab = MainTabRoutes.any { route ->
                 route != null && currentRoute.contains(route)
             }
-            // 2. 현재 라우트가 전체 화면(숨김) 목록에 포함되는지 확인
             val isFullScreen = FullScreenRoutes.any { route ->
                 route != null && currentRoute.contains(route)
             }
-
-            // 최종 결정: 메인 탭이어야 하고, 전체 화면 목록이 아니어야 하며, 홈 로딩 중이 아니어야 함
             isMainTab && !isFullScreen
         }
     }
@@ -82,9 +92,13 @@ fun EntryPointScreen(
             }
         }
     ) { paddingValues ->
-        AppNavHost(
-            navController = navController,
-            modifier = Modifier.padding(top = paddingValues.calculateTopPadding())
-        )
+        CompositionLocalProvider(
+            LocalBottomPadding provides paddingValues.calculateBottomPadding()
+        ){
+            AppNavHost(
+                navController = navController,
+                modifier = Modifier.padding(top = paddingValues.calculateTopPadding())
+            )
+        }
     }
 }
