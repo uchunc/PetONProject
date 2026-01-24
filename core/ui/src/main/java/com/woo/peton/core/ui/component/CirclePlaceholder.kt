@@ -10,20 +10,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun CirclePlaceholder(
     modifier: Modifier = Modifier,
     color: Color,
+    elevation: Dp = 0.dp,
     onClick: () -> Unit = {},
     content: @Composable () -> Unit
 ) {
     Box(
         modifier = modifier
             .size(50.dp)
+            .shadow(elevation = elevation, shape = CircleShape)
             .clip(CircleShape)
             .background(color)
             .clickable { onClick() },
