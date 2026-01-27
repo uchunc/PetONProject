@@ -1,4 +1,4 @@
-package com.woo.peton.features.missingreport.ui.items
+package com.woo.peton.features.missingreport.ui.items.bottomsheet
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
