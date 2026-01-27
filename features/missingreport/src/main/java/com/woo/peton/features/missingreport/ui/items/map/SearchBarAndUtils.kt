@@ -1,4 +1,4 @@
-package com.woo.peton.features.missingreport.ui.items
+package com.woo.peton.features.missingreport.ui.items.map
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -139,7 +139,7 @@ fun SearchBarAndUtils(
                         onClick = onPostingClick
                     ) {
                         Icon(
-                            imageVector = ImageVector.vectorResource(id = R.drawable.plus),
+                            imageVector = ImageVector.vectorResource(id = R.drawable.edit),
                             contentDescription = "작성",
                             tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.size(20.dp)

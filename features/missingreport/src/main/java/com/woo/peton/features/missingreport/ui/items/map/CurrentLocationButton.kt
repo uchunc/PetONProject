@@ -1,4 +1,4 @@
-package com.woo.peton.features.missingreport.ui.items
+package com.woo.peton.features.missingreport.ui.items.map
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
