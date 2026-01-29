@@ -10,19 +10,11 @@ class ImageDataSourceImpl @Inject constructor(
     private val storage: FirebaseStorage
 ) : ImageDataSource {
 
-    override suspend fun uploadImage(uriString: String, path: String): Result<String> {
-        return try {
-            val uri = Uri.parse(uriString)
-            val ref = storage.reference.child(path)
+    override suspend fun uploadImage(uriString: String, path: String): Result<String> = runCatching {
+        val uri = Uri.parse(uriString)
+        val ref = storage.reference.child(path)
 
-            ref.putFile(uri).await()
-
-            val downloadUrl = ref.downloadUrl.await()
-
-            Result.success(downloadUrl.toString())
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Result.failure(e)
-        }
+        ref.putFile(uri).await()
+        ref.downloadUrl.await().toString()
     }
 }

@@ -26,15 +26,15 @@ class PostingViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<PostingUiState>(PostingUiState.Idle)
     val uiState: StateFlow<PostingUiState> = _uiState.asStateFlow()
 
-    // --- 입력 필드 상태 ---
+
     val reportType = MutableStateFlow(ReportType.MISSING)
     val selectedImageUri = MutableStateFlow<Uri?>(null)
     val title = MutableStateFlow("")
     val breed = MutableStateFlow("")
-    val gender = MutableStateFlow("수컷") // 기본값
+    val gender = MutableStateFlow("수컷")
     val age = MutableStateFlow("")
     val locationDescription = MutableStateFlow("")
-    val latitude = MutableStateFlow(37.5665) // 기본값: 서울시청
+    val latitude = MutableStateFlow(37.5665)//이후 기본값 현위치로 수정
     val longitude = MutableStateFlow(126.9780)
     val content = MutableStateFlow("")
 
@@ -43,29 +43,18 @@ class PostingViewModel @Inject constructor(
         latitude.value = lat
         longitude.value = lng
     }
-    // 게시글 등록 요청
+
     fun submitPost() {
         viewModelScope.launch {
             _uiState.value = PostingUiState.Loading
 
-            // 1. 작성자 정보 가져오기
             val user = authRepository.getUserProfile().first()
-
             if (user == null) {
-                // 유저 정보가 없으면 에러 처리
                 _uiState.value = PostingUiState.Error("로그인 정보가 확인되지 않습니다.")
                 return@launch
             }
 
-            // ⚠️ 실제 앱에서는 여기서 Firebase Storage에 selectedImageUri를 업로드하고
-            // 다운로드 받은 URL을 imageUrl에 넣어야 합니다.
-            // 현재는 테스트를 위해 랜덤 이미지 URL을 사용합니다.
-            val finalImageUrl = if (selectedImageUri.value != null) {
-                // 업로드 로직이 구현되면 여기에 실제 URL이 들어감
-                "https://placedog.net/500?random=${System.currentTimeMillis()}"
-            } else {
-                "https://placedog.net/500?random=${System.currentTimeMillis()}"
-            }
+            val finalImageUrl = selectedImageUri.value?.toString() ?: ""
 
             val newPost = ReportPost(
                 reportType = reportType.value,
