@@ -60,6 +60,8 @@ dependencies {
     implementation(libs.androidx.ui)
     ksp(libs.hilt.compiler)
 
+    implementation(libs.firebase.storage)
+
     // 4. Test
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

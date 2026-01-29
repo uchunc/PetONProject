@@ -96,6 +96,7 @@ play-services-location = { group = "com.google.android.gms", name = "play-servic
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
+firebase-storage = { group = "com.google.firebase", name = "firebase-storage" }
 firebase-common = { group = "com.google.firebase", name = "firebase-common" }
 
 # Coroutines support for Firebase
