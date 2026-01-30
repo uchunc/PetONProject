@@ -15,9 +15,9 @@ interface AuthRepository {
         petInfo: MyPet
     ): Result<Boolean>
 
+    suspend fun updateUserProfile(user: User): Result<Unit>
+
     fun signOut()
-
     fun isUserLoggedIn(): Boolean
-
     fun getUserProfile(): Flow<User?>
 }

@@ -25,7 +25,7 @@ class ReportPostRepositoryImpl @Inject constructor(
         dataSource.getPostDetail(id).map { it?.toDomain() }
 
     override suspend fun addPost(pet: ReportPost): Result<Boolean> = runCatching {
-        var finalImageUrl = pet.imageUrl
+        val finalImageUrl = pet.imageUrl
             .takeIf { it.isNotBlank() && !it.startsWith("http") }
             ?.let { uri ->
                 val fileName = "${UUID.randomUUID()}.jpg"

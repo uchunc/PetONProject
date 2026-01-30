@@ -2,6 +2,7 @@ package com.woo.peton.core.data.remote.impl
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.woo.peton.core.data.datasource.AuthDataSource
 import com.woo.peton.core.data.remote.dto.MyPetDto
 import com.woo.peton.core.data.remote.dto.UserDto
@@ -15,7 +16,6 @@ class AuthRemoteDataSourceImpl @Inject constructor(
     private val auth: FirebaseAuth,
     private val firestore: FirebaseFirestore
 ) : AuthDataSource {
-
     override suspend fun signIn(email: String, pw: String) {
         auth.signInWithEmailAndPassword(email, pw).await()
     }
@@ -26,7 +26,15 @@ class AuthRemoteDataSourceImpl @Inject constructor(
     }
 
     override suspend fun saveUserInfo(userDto: UserDto) {
-        firestore.collection("users").document(userDto.uid).set(userDto).await()
+        firestore.collection("users").document(userDto.uid)
+            .set(userDto, SetOptions.merge())
+            .await()
+    }
+
+    override suspend fun updateUserInfo(userDto: UserDto) {
+        firestore.collection("users").document(userDto.uid)
+            .set(userDto, SetOptions.merge())
+            .await()
     }
 
     override suspend fun savePetInfo(uid: String, petDto: MyPetDto) {
@@ -60,9 +68,6 @@ class AuthRemoteDataSourceImpl @Inject constructor(
                 trySend(null)
             }
         }
-
-        awaitClose {
-            listenerRegistration.remove()
-        }
+        awaitClose { listenerRegistration.remove() }
     }
 }
