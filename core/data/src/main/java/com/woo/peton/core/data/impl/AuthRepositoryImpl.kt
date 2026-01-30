@@ -1,6 +1,7 @@
 package com.woo.peton.core.data.impl
 
 import com.woo.peton.core.data.datasource.AuthDataSource
+import com.woo.peton.core.data.datasource.ImageDataSource
 import com.woo.peton.core.data.mapper.toDto
 import com.woo.peton.core.data.remote.dto.UserDto
 import com.woo.peton.domain.model.MyPet
@@ -12,19 +13,18 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import toDomain
+import toDto
+import java.util.UUID
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
-    private val dataSource: AuthDataSource
+    private val dataSource: AuthDataSource,
+    private val imageDataSource: ImageDataSource
 ) : AuthRepository {
 
-    override suspend fun signIn(email: String, pw: String): Result<Boolean> {
-        return try {
-            dataSource.signIn(email, pw)
-            Result.success(true)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+    override suspend fun signIn(email: String, pw: String): Result<Boolean> = runCatching{
+        dataSource.signIn(email, pw)
+        true
     }
 
     override suspend fun signUp(
@@ -33,31 +33,39 @@ class AuthRepositoryImpl @Inject constructor(
         name: String,
         phone: String,
         petInfo: MyPet
-    ): Result<Boolean> {
-        return try {
-            val uid = dataSource.createAccount(email, pw)
+    ): Result<Boolean> = runCatching {
+        val uid = dataSource.createAccount(email, pw)
 
-            val userDto = UserDto(
-                uid = uid,
-                email = email,
-                name = name,
-                phoneNumber = phone
-            )
-            dataSource.saveUserInfo(userDto)
+        val userDto = UserDto(
+            uid = uid,
+            email = email,
+            name = name,
+            phoneNumber = phone
+        )
+        dataSource.saveUserInfo(userDto)
 
-            val petDto = petInfo.copy(ownerId = uid).toDto()
-            dataSource.savePetInfo(uid, petDto)
+        val petDto = petInfo.copy(ownerId = uid).toDto()
+        dataSource.savePetInfo(uid, petDto)
 
-            Result.success(true)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+        true
+    }
+
+    override suspend fun updateUserProfile(user: User): Result<Unit> = runCatching {
+        val finalImageUrl = user.profileImageUrl
+            ?.takeIf { it.isNotBlank() && !it.startsWith("http") }
+            ?.let { uriString ->
+                val fileName = "${user.uid}_profile_${UUID.randomUUID()}.jpg"
+                val path = "users/${user.uid}/profile/$fileName"
+
+                imageDataSource.uploadImage(uriString, path).getOrThrow()
+            } ?: user.profileImageUrl
+
+        val updatedUser = user.copy(profileImageUrl = finalImageUrl)
+        dataSource.updateUserInfo(updatedUser.toDto())
     }
 
     override fun getUserProfile(): Flow<User?> {
-        val uid = dataSource.getCurrentUserUid()
-
-        uid ?: return flowOf(null)
+        val uid = dataSource.getCurrentUserUid() ?: return flowOf(null)
 
         return dataSource.getUserInfoFlow(uid)
             .map { dto -> dto?.toDomain() }

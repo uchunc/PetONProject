@@ -11,6 +11,7 @@ interface AuthDataSource {
     suspend fun createAccount(email: String, pw: String): String
     suspend fun saveUserInfo(userDto: UserDto)
     suspend fun savePetInfo(uid: String, petDto: MyPetDto)
+    suspend fun updateUserInfo(userDto: UserDto)
 
     fun isUserLoggedIn(): Boolean
     fun signOut()
