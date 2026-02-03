@@ -67,7 +67,7 @@ fun MissingReportTabScreen(
             defineValues = {
                 SheetDetent.Collapsed at height(collapsedHeight)
                 SheetDetent.Half at height(halfHeight)
-                SheetDetent.Expanded at offset(topContentHeight + 8.dp)
+                SheetDetent.Expanded at offset(topContentHeight + buttonMargin)
             }
         )
     }
@@ -77,6 +77,18 @@ fun MissingReportTabScreen(
     LaunchedEffect(sheetState) {
         if (viewModel.isFromHome) {
             sheetState.animateTo(SheetDetent.Half)
+        }
+    }
+
+    LaunchedEffect(uiState.selectedPet) {
+        if (uiState.selectedPet != null) {
+            sheetState.animateTo(SheetDetent.Half)
+        }
+    }
+
+    LaunchedEffect(sheetState.targetValue) {
+        if (sheetState.targetValue == SheetDetent.Collapsed && uiState.selectedPet != null) {
+            viewModel.clearSelection()
         }
     }
 
@@ -100,9 +112,13 @@ fun MissingReportTabScreen(
             Box(modifier = Modifier.fillMaxSize()) {
                 ReportMapArea(
                     pets = uiState.currentPets,
+                    selectedPet = uiState.selectedPet,
                     modifier = Modifier.fillMaxSize(),
                     onMarkerClick = { petId ->
                         viewModel.selectPet(petId)
+                    },
+                    onMapClick = {
+                        viewModel.clearSelection()
                     }
                 )
             }
@@ -125,12 +141,12 @@ fun MissingReportTabScreen(
             exit = fadeOut(animationSpec = tween(durationMillis = 150)),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 16.dp)
+                .padding(end = buttonMargin)
                 .offset {
                     val visibleHeight = runCatching {
                         sheetState.requireSheetVisibleHeight()
                     }.getOrDefault(0f)
-                    val marginPx = 16.dp.toPx()
+                    val marginPx = buttonMargin.toPx()
 
                     IntOffset(x = 0, y = -(visibleHeight + marginPx).roundToInt())
                 }
