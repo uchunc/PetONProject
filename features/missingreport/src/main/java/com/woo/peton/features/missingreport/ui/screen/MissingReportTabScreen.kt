@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -27,6 +28,9 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.rememberCameraPositionState
 import com.woo.peton.core.ui.component.LocalBottomPadding
 import com.woo.peton.features.missingreport.MissingReportViewModel
 import com.woo.peton.features.missingreport.ui.items.bottomsheet.MissingReportBottomSheet
@@ -51,15 +55,26 @@ fun MissingReportTabScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val localDensity = LocalDensity.current
+    //val scope = rememberCoroutineScope()
 
-    val screenHeight = with(localDensity) { LocalWindowInfo.current.containerSize.height.toDp() }
+    //화면 및 레이아웃
+    val screenHeight = with(localDensity) {LocalWindowInfo.current.containerSize.height.toDp()}
+    val bottomPadding = LocalBottomPadding.current
+
+    //높이 설정
+    val peekHeight = 40.dp
+    val collapsedHeight = bottomPadding + peekHeight
+    val halfHeight = screenHeight * 0.45f
+    val overlapHeight = 28.dp
+    val buttonMargin = 16.dp
 
     var topContentHeight by remember { mutableStateOf(0.dp) }
 
-    val peekHeight = 60.dp
-    val collapsedHeight = LocalBottomPadding.current + peekHeight
-    val halfHeight = screenHeight * 0.45f
-    val buttonMargin = 16.dp
+    //지도 설정
+    val defaultSeoul = LatLng(37.5665, 126.9780)
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(defaultSeoul, 15f)
+    }
 
     val sheetState = key(topContentHeight){
         rememberBottomSheetState(
@@ -71,7 +86,6 @@ fun MissingReportTabScreen(
             }
         )
     }
-
     val scaffoldState = rememberBottomSheetScaffoldState(sheetState)
 
     LaunchedEffect(sheetState) {
@@ -113,13 +127,26 @@ fun MissingReportTabScreen(
                 ReportMapArea(
                     pets = uiState.currentPets,
                     selectedPet = uiState.selectedPet,
-                    modifier = Modifier.fillMaxSize(),
-                    onMarkerClick = { petId ->
-                        viewModel.selectPet(petId)
-                    },
-                    onMapClick = {
-                        viewModel.clearSelection()
-                    }
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .offset {
+                            val visibleHeightPx = runCatching {
+                                sheetState.requireSheetVisibleHeight()
+                            }.getOrDefault(0f)
+
+                            val halfHeightPx = with(localDensity) { halfHeight.toPx() }
+                            val overlapHeightPx = with(localDensity) { overlapHeight.toPx() }
+
+                            val targetHeightPx = visibleHeightPx.coerceAtMost(halfHeightPx)
+
+                            val calculatedOffset = (targetHeightPx - overlapHeightPx).coerceAtLeast(0f)
+
+                            IntOffset(x = 0, y = -calculatedOffset.roundToInt())
+                        },
+                    cameraPositionState = cameraPositionState,
+                    contentPadding = PaddingValues(bottom = overlapHeight),
+                    onMarkerClick = { petId -> viewModel.selectPet(petId) },
+                    onMapClick = { viewModel.clearSelection() }
                 )
             }
         }
@@ -152,7 +179,17 @@ fun MissingReportTabScreen(
                 }
         ) {
             CurrentLocationButton(
-                onLocationClick = {}
+                onLocationClick = {
+                    /*if (userLocation != null) {
+                        scope.launch {
+                            cameraPositionState.animate(
+                                CameraUpdateFactory.newCameraPosition(
+                                    CameraPosition.fromLatLngZoom(userLocation!!, 17f)
+                                )
+                            )
+                        }
+                    }*/
+                }
             )
         }
     }
