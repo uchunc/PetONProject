@@ -13,8 +13,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
@@ -37,6 +39,7 @@ fun ReportMapArea(
     onMapClick: () -> Unit
 ) {
     var isMapLoaded by remember { mutableStateOf(false) }
+    val density = LocalDensity.current
 
     LaunchedEffect(pets,isMapLoaded) {
         if (isMapLoaded && pets.isNotEmpty() && selectedPet == null) {
@@ -46,6 +49,24 @@ fun ReportMapArea(
                     CameraUpdateFactory.newLatLngZoom(
                         LatLng(firstPet.latitude, firstPet.longitude), 15f
                     )
+                )
+            }
+        }
+    }
+
+    LaunchedEffect(selectedPet) {
+        selectedPet?.let { pet ->
+            runCatching {
+                val targetLatLng = LatLng(pet.latitude, pet.longitude)
+                val yOffsetPx = with(density) { -300.dp.toPx() }
+
+                cameraPositionState.move(
+                    CameraUpdateFactory.newCameraPosition(
+                        CameraPosition.fromLatLngZoom(targetLatLng, 15f)
+                    )
+                )
+                cameraPositionState.move(
+                    CameraUpdateFactory.scrollBy(0f, yOffsetPx)
                 )
             }
         }

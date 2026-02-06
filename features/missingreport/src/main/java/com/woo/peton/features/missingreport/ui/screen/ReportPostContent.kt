@@ -90,7 +90,7 @@ fun ReportPostContent(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "·  ${pet.createdAt.toRelativeString()}",
+                text = "·  ${pet.createdAt.toRelativeString()} 등록",
                 style = MaterialTheme.typography.labelMedium,
                 color = Color.Gray
             )
@@ -103,7 +103,7 @@ fun ReportPostContent(
 
         InfoRow(label = "품종", value = pet.breed)
         InfoRow(label = "성별 / 나이", value = "${pet.gender} / ${pet.age}")
-        InfoRow(label = "발견/실종 장소", value = pet.locationDescription)
+        InfoRow(label = "발견 / 실종", value = pet.locationDescription)
 
         Spacer(modifier = Modifier.height(24.dp))
 
