@@ -7,6 +7,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -27,6 +28,8 @@ import com.woo.peton.features.missingreport.ui.items.map.marker.PetMarker
 fun ReportMapArea(
     pets: List<ReportPost>,
     selectedPet: ReportPost?,
+    loadedImageIds: Set<String>,
+    onImageLoaded: (String) -> Unit,
     modifier: Modifier = Modifier,
     cameraPositionState: CameraPositionState,
     contentPadding: PaddingValues = PaddingValues(0.dp),
@@ -63,10 +66,14 @@ fun ReportMapArea(
             onMapClick = { onMapClick() }
         ) {
             pets.forEach { pet ->
-                PetMarker(
-                    pet = pet,
-                    onClick = { onMarkerClick(pet.id) }
-                )
+                key(pet.id) {
+                    PetMarker(
+                        pet = pet,
+                        isImageLoaded = loadedImageIds.contains(pet.id),
+                        onImageLoaded = { onImageLoaded(pet.id) },
+                        onClick = { onMarkerClick(pet.id) }
+                    )
+                }
             }
         }
 

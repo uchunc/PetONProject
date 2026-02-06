@@ -127,6 +127,8 @@ fun MissingReportTabScreen(
                 ReportMapArea(
                     pets = uiState.currentPets,
                     selectedPet = uiState.selectedPet,
+                    loadedImageIds = uiState.loadedImageIds,
+                    onImageLoaded = viewModel::onImageLoaded,
                     modifier = Modifier
                         .fillMaxSize()
                         .offset {
