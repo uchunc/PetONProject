@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -23,8 +22,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -32,14 +29,12 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.MarkerComposable
+import com.google.maps.android.compose.MapsComposeExperimentalApi
 import com.google.maps.android.compose.rememberCameraPositionState
-import com.google.maps.android.compose.rememberUpdatedMarkerState
-import com.woo.peton.core.ui.R
 import com.woo.peton.core.utils.toFormattedString
 import com.woo.peton.core.utils.toRelativeString
 import com.woo.peton.domain.model.ReportPost
-import com.woo.peton.domain.model.ReportType
+import com.woo.peton.features.missingreport.ui.items.map.marker.PetMarker
 
 @Composable
 fun ReportPostContent(
@@ -138,11 +133,7 @@ fun ReportPostContent(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 
-                DetailMapSection(
-                    latitude = pet.latitude,
-                    longitude = pet.longitude,
-                    type = pet.reportType
-                )
+                DetailMapSection(pet = pet)
             }
             false -> Unit
         }
@@ -169,16 +160,19 @@ fun InfoRow(label: String, value: String) {
     }
 }
 
+@OptIn(MapsComposeExperimentalApi::class)
 @Composable
-fun DetailMapSection(latitude: Double, longitude: Double, type: ReportType) {
-    val location = LatLng(latitude, longitude)
+fun DetailMapSection(pet: ReportPost) {
+    val location = LatLng(pet.latitude, pet.longitude)
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(location, 16f)
     }
-    val markerState = rememberUpdatedMarkerState(position = location)
 
     Box(
-        modifier = Modifier.fillMaxWidth().height(200.dp).clip(RoundedCornerShape(12.dp))
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .clip(RoundedCornerShape(12.dp))
     ) {
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
@@ -190,14 +184,11 @@ fun DetailMapSection(latitude: Double, longitude: Double, type: ReportType) {
                 mapToolbarEnabled = false
             )
         ) {
-            MarkerComposable(keys = arrayOf(latitude, longitude), state = markerState) {
-                Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.location_filled),
-                    contentDescription = null,
-                    tint = Color(type.colorHex),
-                    modifier = Modifier.size(40.dp)
-                )
-            }
+            PetMarker(
+                pet = pet,
+                showImage = false,
+                onClick = {}
+            )
         }
     }
 }

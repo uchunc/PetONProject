@@ -39,27 +39,35 @@ import kotlinx.coroutines.flow.filter
 @Composable
 fun PetMarker(
     pet: ReportPost,
-    isImageLoaded: Boolean,
-    onImageLoaded: () -> Unit,
+    isImageLoaded: Boolean = true,
+    onImageLoaded: () -> Unit ={},
+    showImage: Boolean = true,
     onClick: () -> Unit
 ) {
-    val painter = rememberAsyncImagePainter(
-        model = ImageRequest.Builder(LocalContext.current)
-            .data(pet.imageUrl.takeIf { it.isNotEmpty() })
-            .size(with(LocalDensity.current) { 36.dp.roundToPx() })
-            .scale(Scale.FIT)
-            .allowHardware(false)
-            .crossfade(false)
-            .build()
-    )
+    val painter = when (showImage) {
+        true -> rememberAsyncImagePainter(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(pet.imageUrl.takeIf { it.isNotEmpty() })
+                .size(with(LocalDensity.current) { 56.dp.roundToPx() })
+                .scale(Scale.FIT)
+                .allowHardware(false)
+                .crossfade(false)
+                .build()
+        )
+        false -> null
+    }
 
-    LaunchedEffect(painter) {
-        snapshotFlow { painter.state }
-            .filter { it is AsyncImagePainter.State.Success }
-            .collect {
-                withFrameNanos { }
-                onImageLoaded()
+    when {
+        painter != null -> {
+            LaunchedEffect(painter) {
+                snapshotFlow { painter.state }
+                    .filter { it is AsyncImagePainter.State.Success }
+                    .collect {
+                        withFrameNanos { }
+                        onImageLoaded()
+                    }
             }
+        }
     }
 
     val markerState = remember(pet.id) {
@@ -68,8 +76,13 @@ fun PetMarker(
         position = LatLng(pet.latitude, pet.longitude)
     }
 
+    val markerKeys = when (showImage) {
+        true -> arrayOf<Any>(pet.id, pet.reportType, isImageLoaded)
+        false -> arrayOf<Any>(pet.id, pet.reportType, "simple")
+    }
+
     MarkerComposable(
-        keys = arrayOf<Any>(pet.id, pet.reportType, isImageLoaded),
+        keys = markerKeys,
         state = markerState,
         title = pet.title,
         anchor = Offset(0.5f, 1.0f),
@@ -78,6 +91,7 @@ fun PetMarker(
         PetMarkerLayout(
             pet = pet,
             painter = painter,
+            showImage = showImage,
             onClick = onClick
         )
     }
@@ -86,7 +100,8 @@ fun PetMarker(
 @Composable
 private fun PetMarkerLayout(
     pet: ReportPost,
-    painter: AsyncImagePainter,
+    painter: AsyncImagePainter?,
+    showImage: Boolean,
     onClick: () -> Unit
 ) {
     Column(
@@ -95,43 +110,48 @@ private fun PetMarkerLayout(
         val filterColor = Color(pet.reportType.colorHex)
         val defaultImage = painterResource(id = R.drawable.logo)
 
-        Box(
-            modifier = Modifier
-                .size(56.dp)
-                .border(3.dp, filterColor, CircleShape)
-                .background(Color.White, CircleShape)
-                .clip(CircleShape)
-                .clickable { onClick() },
-            contentAlignment = Alignment.Center
-        ) {
-            when (painter.state) {
-                is AsyncImagePainter.State.Loading -> {
-                    Image(
-                        painter = defaultImage,
-                        contentDescription = "Loading",
-                        modifier = Modifier.size(24.dp),
-                        alpha = 0.3f
-                    )
-                }
-                is AsyncImagePainter.State.Error -> {
-                    Image(
-                        painter = defaultImage,
-                        contentDescription = "Error",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Fit
-                    )
-                }
-                else -> {
-                    Image(
-                        painter = painter,
-                        contentDescription = "Pet Image",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
+        when {
+            showImage && painter != null -> {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .border(3.dp, filterColor, CircleShape)
+                    .background(Color.White, CircleShape)
+                    .clip(CircleShape)
+                    .clickable { onClick() },
+                contentAlignment = Alignment.Center
+                ) {
+                    when (painter.state) {
+                        is AsyncImagePainter.State.Loading -> {
+                            Image(
+                                painter = defaultImage,
+                                contentDescription = "Loading",
+                                modifier = Modifier.size(24.dp),
+                                alpha = 0.3f
+                            )
+                        }
+
+                        is AsyncImagePainter.State.Error -> {
+                            Image(
+                                painter = defaultImage,
+                                contentDescription = "Error",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Fit
+                            )
+                        }
+
+                        else -> {
+                            Image(
+                                painter = painter,
+                                contentDescription = "Pet Image",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
+                    }
                 }
             }
         }
-
         Image(
             painter = painterResource(id = R.drawable.location_filled),
             contentDescription = null,
