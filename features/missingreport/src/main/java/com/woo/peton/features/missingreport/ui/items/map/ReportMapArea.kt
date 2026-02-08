@@ -10,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,33 +42,34 @@ fun ReportMapArea(
     var isMapLoaded by remember { mutableStateOf(false) }
     val density = LocalDensity.current
 
-    LaunchedEffect(pets,isMapLoaded) {
-        if (isMapLoaded && pets.isNotEmpty() && selectedPet == null) {
-            runCatching {
+    val isInitialMovementDone = rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(isMapLoaded, selectedPet, pets) {
+        if (!isMapLoaded || pets.isEmpty()) return@LaunchedEffect
+
+        if (selectedPet != null) {
+            val targetLatLng = LatLng(selectedPet.latitude, selectedPet.longitude)
+            val yOffsetPx = with(density) { -300.dp.toPx() }
+
+            cameraPositionState.move(
+                CameraUpdateFactory.newCameraPosition(
+                    CameraPosition.fromLatLngZoom(targetLatLng, 15f)
+                )
+            )
+            cameraPositionState.move(
+                CameraUpdateFactory.scrollBy(0f, yOffsetPx)
+            )
+            isInitialMovementDone.value = true
+        } else {
+            //TODO 사용자 현위치 이동
+            if (!isInitialMovementDone.value){
                 val firstPet = pets.first()
-                cameraPositionState.animate(
+                cameraPositionState.move(
                     CameraUpdateFactory.newLatLngZoom(
                         LatLng(firstPet.latitude, firstPet.longitude), 15f
                     )
                 )
-            }
-        }
-    }
-
-    LaunchedEffect(selectedPet) {
-        selectedPet?.let { pet ->
-            runCatching {
-                val targetLatLng = LatLng(pet.latitude, pet.longitude)
-                val yOffsetPx = with(density) { -300.dp.toPx() }
-
-                cameraPositionState.move(
-                    CameraUpdateFactory.newCameraPosition(
-                        CameraPosition.fromLatLngZoom(targetLatLng, 15f)
-                    )
-                )
-                cameraPositionState.move(
-                    CameraUpdateFactory.scrollBy(0f, yOffsetPx)
-                )
+                isInitialMovementDone.value = true
             }
         }
     }

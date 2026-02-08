@@ -18,7 +18,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,6 +42,9 @@ import com.woo.peton.features.missingreport.ui.items.map.SearchBarAndUtils
 import io.morfly.compose.bottomsheet.material3.BottomSheetScaffold
 import io.morfly.compose.bottomsheet.material3.rememberBottomSheetScaffoldState
 import io.morfly.compose.bottomsheet.material3.rememberBottomSheetState
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 enum class SheetDetent {
@@ -55,7 +60,7 @@ fun MissingReportTabScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val localDensity = LocalDensity.current
-    //val scope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
 
     //화면 및 레이아웃
     val screenHeight = with(localDensity) {LocalWindowInfo.current.containerSize.height.toDp()}
@@ -76,22 +81,18 @@ fun MissingReportTabScreen(
         position = CameraPosition.fromLatLngZoom(defaultSeoul, 15f)
     }
 
+    val isSheetActive = uiState.selectedPet != null || viewModel.isFromHome
+    val initialDetent = if (isSheetActive) SheetDetent.Half else SheetDetent.Collapsed
+
     val sheetState = key(topContentHeight){
         rememberBottomSheetState(
-            initialValue = SheetDetent.Collapsed,
+            initialValue = initialDetent,
             defineValues = {
                 SheetDetent.Collapsed at height(collapsedHeight)
                 SheetDetent.Half at height(halfHeight)
                 SheetDetent.Expanded at offset(topContentHeight + buttonMargin)
             }
         )
-    }
-    val scaffoldState = rememberBottomSheetScaffoldState(sheetState)
-
-    LaunchedEffect(sheetState) {
-        if (viewModel.isFromHome) {
-            sheetState.animateTo(SheetDetent.Half)
-        }
     }
 
     LaunchedEffect(uiState.selectedPet) {
@@ -100,12 +101,18 @@ fun MissingReportTabScreen(
         }
     }
 
-    LaunchedEffect(sheetState.targetValue) {
-        if (sheetState.targetValue == SheetDetent.Collapsed && uiState.selectedPet != null) {
-            viewModel.clearSelection()
-        }
+    LaunchedEffect(sheetState) {
+        snapshotFlow { sheetState.currentValue }
+            .distinctUntilChanged()
+            .filter { it == SheetDetent.Collapsed }
+            .collect {
+                if (uiState.selectedPet != null) {
+                    viewModel.clearSelection()
+                }
+            }
     }
 
+    val scaffoldState = rememberBottomSheetScaffoldState(sheetState)
     Box(modifier = Modifier.fillMaxSize()) {
         BottomSheetScaffold(
             modifier = Modifier.fillMaxSize(),
@@ -118,7 +125,13 @@ fun MissingReportTabScreen(
                 MissingReportBottomSheet(
                     pets = uiState.currentPets,
                     selectedPet = uiState.selectedPet,
-                    onItemClick = { selectedPetId -> onNavigateToDetail(selectedPetId) },
+                    onItemClick = { selectedPetId ->
+                        viewModel.selectPet(selectedPetId)
+                        scope.launch {
+                            sheetState.snapTo(SheetDetent.Half)
+                        }
+                        onNavigateToDetail(selectedPetId)
+                    },
                     onBackToList = { viewModel.clearSelection() }
                 )
             }
