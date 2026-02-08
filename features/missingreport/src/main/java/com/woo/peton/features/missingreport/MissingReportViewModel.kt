@@ -25,6 +25,7 @@ class MissingReportViewModel @Inject constructor(
 ) : ViewModel() {
     private val _filters = MutableStateFlow(ReportType.entries.associateWith { true })
     private val _selectedPet = MutableStateFlow<ReportPost?>(null)
+    private val _loadedImageIds = MutableStateFlow<Set<String>>(emptySet())
 
     val isFromHome: Boolean = savedStateHandle.get<String>("filterType") != null
 
@@ -39,8 +40,9 @@ class MissingReportViewModel @Inject constructor(
     val uiState: StateFlow<MissingReportUiState> = combine(
         _allPetsFlow,
         _filters,
-        _selectedPet
-    ){ allPets, filters, selectedPet ->
+        _selectedPet,
+        _loadedImageIds
+    ){ allPets, filters, selectedPet, loadedImageIds ->
         val filteredPets = allPets.filter { pet ->
             filters[pet.reportType] == true
         }
@@ -49,6 +51,7 @@ class MissingReportViewModel @Inject constructor(
             currentPets = filteredPets,
             selectedPet = selectedPet,
             filters = filters,
+            loadedImageIds = loadedImageIds,
             isLoading = false,
             errorMessage = null
         )
@@ -97,5 +100,10 @@ class MissingReportViewModel @Inject constructor(
 
     fun clearSelection() {
         _selectedPet.value = null
+    }
+
+    fun onImageLoaded(petId: String) {
+        if (_loadedImageIds.value.contains(petId)) return
+        _loadedImageIds.update { it + petId }
     }
 }

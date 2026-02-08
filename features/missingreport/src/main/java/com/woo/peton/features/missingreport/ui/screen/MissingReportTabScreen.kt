@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -17,7 +18,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,6 +30,9 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.rememberCameraPositionState
 import com.woo.peton.core.ui.component.LocalBottomPadding
 import com.woo.peton.features.missingreport.MissingReportViewModel
 import com.woo.peton.features.missingreport.ui.items.bottomsheet.MissingReportBottomSheet
@@ -36,6 +42,9 @@ import com.woo.peton.features.missingreport.ui.items.map.SearchBarAndUtils
 import io.morfly.compose.bottomsheet.material3.BottomSheetScaffold
 import io.morfly.compose.bottomsheet.material3.rememberBottomSheetScaffoldState
 import io.morfly.compose.bottomsheet.material3.rememberBottomSheetState
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 enum class SheetDetent {
@@ -51,35 +60,59 @@ fun MissingReportTabScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val localDensity = LocalDensity.current
+    val scope = rememberCoroutineScope()
 
-    val screenHeight = with(localDensity) { LocalWindowInfo.current.containerSize.height.toDp() }
+    //화면 및 레이아웃
+    val screenHeight = with(localDensity) {LocalWindowInfo.current.containerSize.height.toDp()}
+    val bottomPadding = LocalBottomPadding.current
+
+    //높이 설정
+    val peekHeight = 40.dp
+    val collapsedHeight = bottomPadding + peekHeight
+    val halfHeight = screenHeight * 0.45f
+    val overlapHeight = 28.dp
+    val buttonMargin = 16.dp
 
     var topContentHeight by remember { mutableStateOf(0.dp) }
 
-    val peekHeight = 60.dp
-    val collapsedHeight = LocalBottomPadding.current + peekHeight
-    val halfHeight = screenHeight * 0.45f
-    val buttonMargin = 16.dp
+    //지도 설정
+    val defaultSeoul = LatLng(37.5665, 126.9780)
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(defaultSeoul, 15f)
+    }
+
+    val isSheetActive = uiState.selectedPet != null || viewModel.isFromHome
+    val initialDetent = if (isSheetActive) SheetDetent.Half else SheetDetent.Collapsed
 
     val sheetState = key(topContentHeight){
         rememberBottomSheetState(
-            initialValue = SheetDetent.Collapsed,
+            initialValue = initialDetent,
             defineValues = {
                 SheetDetent.Collapsed at height(collapsedHeight)
                 SheetDetent.Half at height(halfHeight)
-                SheetDetent.Expanded at offset(topContentHeight + 8.dp)
+                SheetDetent.Expanded at offset(topContentHeight + buttonMargin)
             }
         )
     }
 
-    val scaffoldState = rememberBottomSheetScaffoldState(sheetState)
-
-    LaunchedEffect(sheetState) {
-        if (viewModel.isFromHome) {
+    LaunchedEffect(uiState.selectedPet) {
+        if (uiState.selectedPet != null) {
             sheetState.animateTo(SheetDetent.Half)
         }
     }
 
+    LaunchedEffect(sheetState) {
+        snapshotFlow { sheetState.currentValue }
+            .distinctUntilChanged()
+            .filter { it == SheetDetent.Collapsed }
+            .collect {
+                if (uiState.selectedPet != null) {
+                    viewModel.clearSelection()
+                }
+            }
+    }
+
+    val scaffoldState = rememberBottomSheetScaffoldState(sheetState)
     Box(modifier = Modifier.fillMaxSize()) {
         BottomSheetScaffold(
             modifier = Modifier.fillMaxSize(),
@@ -92,7 +125,13 @@ fun MissingReportTabScreen(
                 MissingReportBottomSheet(
                     pets = uiState.currentPets,
                     selectedPet = uiState.selectedPet,
-                    onItemClick = { selectedPetId -> onNavigateToDetail(selectedPetId) },
+                    onItemClick = { selectedPetId ->
+                        viewModel.selectPet(selectedPetId)
+                        scope.launch {
+                            sheetState.snapTo(SheetDetent.Half)
+                        }
+                        onNavigateToDetail(selectedPetId)
+                    },
                     onBackToList = { viewModel.clearSelection() }
                 )
             }
@@ -100,10 +139,29 @@ fun MissingReportTabScreen(
             Box(modifier = Modifier.fillMaxSize()) {
                 ReportMapArea(
                     pets = uiState.currentPets,
-                    modifier = Modifier.fillMaxSize(),
-                    onMarkerClick = { petId ->
-                        viewModel.selectPet(petId)
-                    }
+                    selectedPet = uiState.selectedPet,
+                    loadedImageIds = uiState.loadedImageIds,
+                    onImageLoaded = viewModel::onImageLoaded,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .offset {
+                            val visibleHeightPx = runCatching {
+                                sheetState.requireSheetVisibleHeight()
+                            }.getOrDefault(0f)
+
+                            val halfHeightPx = with(localDensity) { halfHeight.toPx() }
+                            val overlapHeightPx = with(localDensity) { overlapHeight.toPx() }
+
+                            val targetHeightPx = visibleHeightPx.coerceAtMost(halfHeightPx)
+
+                            val calculatedOffset = (targetHeightPx - overlapHeightPx).coerceAtLeast(0f)
+
+                            IntOffset(x = 0, y = -calculatedOffset.roundToInt())
+                        },
+                    cameraPositionState = cameraPositionState,
+                    contentPadding = PaddingValues(bottom = overlapHeight),
+                    onMarkerClick = { petId -> viewModel.selectPet(petId) },
+                    onMapClick = { viewModel.clearSelection() }
                 )
             }
         }
@@ -125,18 +183,28 @@ fun MissingReportTabScreen(
             exit = fadeOut(animationSpec = tween(durationMillis = 150)),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 16.dp)
+                .padding(end = buttonMargin)
                 .offset {
                     val visibleHeight = runCatching {
                         sheetState.requireSheetVisibleHeight()
                     }.getOrDefault(0f)
-                    val marginPx = 16.dp.toPx()
+                    val marginPx = buttonMargin.toPx()
 
                     IntOffset(x = 0, y = -(visibleHeight + marginPx).roundToInt())
                 }
         ) {
             CurrentLocationButton(
-                onLocationClick = {}
+                onLocationClick = {
+                    /*if (userLocation != null) {
+                        scope.launch {
+                            cameraPositionState.animate(
+                                CameraUpdateFactory.newCameraPosition(
+                                    CameraPosition.fromLatLngZoom(userLocation!!, 17f)
+                                )
+                            )
+                        }
+                    }*/
+                }
             )
         }
     }
