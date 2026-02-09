@@ -15,17 +15,10 @@ val NavBackStackEntry.topBarAsRouteName: TopBarData
     @Composable
     get() {
         val routeName = destination.route ?: return TopBarData()
-        return when {
-            routeName.contains("AuthScreen") -> {
-                TopBarData()
-            }
 
+        return when {
             routeName.contains("LocationSelect") -> {
                 TopBarData(title = "위치 선택", titleIcon = ImageVector.vectorResource(R.drawable.close))
-            }
-
-            routeName.contains("Posting") -> {
-                TopBarData(title = "게시물 등록하기", titleIcon = ImageVector.vectorResource(R.drawable.arrowl))
             }
 
             routeName.contains("Home") || routeName.contains("Missing") || routeName.contains("Chatting")  || routeName.contains("MyPage") -> {

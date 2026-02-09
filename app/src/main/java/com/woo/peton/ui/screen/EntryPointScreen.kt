@@ -10,6 +10,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -36,7 +37,9 @@ private val MainTabRoutes = setOf(
 )
 private val FullScreenRoutes = setOf(
     MyPageNavigationRoute.MyPetDetailScreen::class.qualifiedName,
-    AuthNavigationRoute.AuthScreen::class.qualifiedName
+    AuthNavigationRoute.AuthScreen::class.qualifiedName,
+    MissingNavigationRoute.PostingScreen::class.qualifiedName,
+    MissingNavigationRoute.DetailScreen::class.qualifiedName
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -97,7 +100,9 @@ fun EntryPointScreen(
         ){
             AppNavHost(
                 navController = navController,
-                modifier = Modifier.padding(top = paddingValues.calculateTopPadding())
+                modifier = Modifier.padding(
+                    top = if (isShowBars) paddingValues.calculateTopPadding() else 0.dp
+                )
             )
         }
     }
