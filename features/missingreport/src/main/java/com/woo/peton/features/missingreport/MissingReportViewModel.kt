@@ -60,7 +60,6 @@ class MissingReportViewModel @Inject constructor(
             currentPets = filteredPets,
             selectedPet = selectedPet,
             filters = filters,
-            loadedImageIds = loadedImageIds,
             isLoading = false,
             errorMessage = null
         )

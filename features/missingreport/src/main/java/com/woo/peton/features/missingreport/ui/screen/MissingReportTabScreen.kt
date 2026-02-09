@@ -43,7 +43,7 @@ import com.woo.peton.core.ui.component.LocalBottomPadding
 import com.woo.peton.features.missingreport.MissingReportViewModel
 import com.woo.peton.features.missingreport.service.LocationService
 import com.woo.peton.features.missingreport.ui.items.bottomsheet.MissingReportBottomSheet
-import com.woo.peton.features.missingreport.ui.items.map.CurrentLocationMarker
+import com.woo.peton.features.missingreport.ui.items.map.CurrentLocationButton
 import com.woo.peton.features.missingreport.ui.items.map.ReportMapArea
 import com.woo.peton.features.missingreport.ui.items.map.SearchBarAndUtils
 import io.morfly.compose.bottomsheet.material3.BottomSheetScaffold
@@ -217,9 +217,8 @@ fun MissingReportTabScreen(
                     ReportMapArea(
                         pets = uiState.currentPets,
                         selectedPet = uiState.selectedPet,
-                        loadedImageIds = uiState.loadedImageIds,
+                        currentLocation = currentLocation,
                         onImageLoaded = viewModel::onImageLoaded,
-                        isMyLocationEnabled = isMyLocationEnabled,
                         cameraPositionState = cameraPositionState,
                         contentPadding = PaddingValues(bottom = overlapHeight),
                         onMarkerClick = { petId -> viewModel.selectPet(petId) },
@@ -235,7 +234,7 @@ fun MissingReportTabScreen(
                             .padding(end = buttonMargin)
                             .offset { IntOffset(x = 0, y = -buttonMarginPx.roundToInt()) }
                     ) {
-                        CurrentLocationMarker(
+                        CurrentLocationButton(
                             onLocationClick = {
                                 when {
                                     !isMyLocationEnabled -> {

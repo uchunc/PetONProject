@@ -43,17 +43,16 @@ import com.woo.peton.domain.model.ReportPost
 @Composable
 fun PetMarker(
     pet: ReportPost,
-    isImageLoaded: Boolean = true,
     onImageLoaded: () -> Unit ={},
     showImage: Boolean = true,
     onClick: () -> Unit
 ) {
-    val context = LocalContext.current
-    val density = LocalDensity.current
-
     var imageBitmap by remember(pet.id) { mutableStateOf<Bitmap?>(null) }
 
     if (showImage) {
+        val context = LocalContext.current
+        val density = LocalDensity.current
+
         LaunchedEffect(pet.imageUrl) {
             if (imageBitmap != null) return@LaunchedEffect
 

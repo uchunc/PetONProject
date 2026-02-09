@@ -1,5 +1,6 @@
 package com.woo.peton.features.missingreport.ui.items.map
 
+import android.location.Location
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,10 +21,10 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.MapsComposeExperimentalApi
 import com.woo.peton.domain.model.ReportPost
+import com.woo.peton.features.missingreport.ui.items.map.marker.CurrentLocationMarker
 import com.woo.peton.features.missingreport.ui.items.map.marker.PetMarker
 
 @OptIn(MapsComposeExperimentalApi::class)
@@ -31,9 +32,8 @@ import com.woo.peton.features.missingreport.ui.items.map.marker.PetMarker
 fun ReportMapArea(
     pets: List<ReportPost>,
     selectedPet: ReportPost?,
-    loadedImageIds: Set<String>,
+    currentLocation: Location?,
     onImageLoaded: (String) -> Unit,
-    isMyLocationEnabled: Boolean,
     modifier: Modifier = Modifier,
     cameraPositionState: CameraPositionState,
     contentPadding: PaddingValues = PaddingValues(0.dp),
@@ -72,9 +72,6 @@ fun ReportMapArea(
                 compassEnabled = false,
                 mapToolbarEnabled = false
             ),
-            properties = MapProperties(
-                isMyLocationEnabled = isMyLocationEnabled
-            ),
             onMapLoaded = { isMapLoaded = true },
             onMapClick = { onMapClick() }
         ) {
@@ -82,11 +79,13 @@ fun ReportMapArea(
                 key(pet.id) {
                     PetMarker(
                         pet = pet,
-                        isImageLoaded = loadedImageIds.contains(pet.id),
                         onImageLoaded = { onImageLoaded(pet.id) },
                         onClick = { onMarkerClick(pet.id) }
                     )
                 }
+            }
+            if (currentLocation != null) {
+                CurrentLocationMarker(location = currentLocation)
             }
         }
 
