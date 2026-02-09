@@ -1,5 +1,6 @@
 package com.woo.peton.features.missingreport.ui.items.map
 
+import android.location.Location
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,7 +11,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,6 +24,7 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.MapsComposeExperimentalApi
 import com.woo.peton.domain.model.ReportPost
+import com.woo.peton.features.missingreport.ui.items.map.marker.CurrentLocationMarker
 import com.woo.peton.features.missingreport.ui.items.map.marker.PetMarker
 
 @OptIn(MapsComposeExperimentalApi::class)
@@ -31,7 +32,7 @@ import com.woo.peton.features.missingreport.ui.items.map.marker.PetMarker
 fun ReportMapArea(
     pets: List<ReportPost>,
     selectedPet: ReportPost?,
-    loadedImageIds: Set<String>,
+    currentLocation: Location?,
     onImageLoaded: (String) -> Unit,
     modifier: Modifier = Modifier,
     cameraPositionState: CameraPositionState,
@@ -42,10 +43,8 @@ fun ReportMapArea(
     var isMapLoaded by remember { mutableStateOf(false) }
     val density = LocalDensity.current
 
-    val isInitialMovementDone = rememberSaveable { mutableStateOf(false) }
-
     LaunchedEffect(isMapLoaded, selectedPet, pets) {
-        if (!isMapLoaded || pets.isEmpty()) return@LaunchedEffect
+        if (!isMapLoaded) return@LaunchedEffect
 
         if (selectedPet != null) {
             val targetLatLng = LatLng(selectedPet.latitude, selectedPet.longitude)
@@ -59,18 +58,6 @@ fun ReportMapArea(
             cameraPositionState.move(
                 CameraUpdateFactory.scrollBy(0f, yOffsetPx)
             )
-            isInitialMovementDone.value = true
-        } else {
-            //TODO 사용자 현위치 이동
-            if (!isInitialMovementDone.value){
-                val firstPet = pets.first()
-                cameraPositionState.move(
-                    CameraUpdateFactory.newLatLngZoom(
-                        LatLng(firstPet.latitude, firstPet.longitude), 15f
-                    )
-                )
-                isInitialMovementDone.value = true
-            }
         }
     }
 
@@ -92,11 +79,13 @@ fun ReportMapArea(
                 key(pet.id) {
                     PetMarker(
                         pet = pet,
-                        isImageLoaded = loadedImageIds.contains(pet.id),
                         onImageLoaded = { onImageLoaded(pet.id) },
                         onClick = { onMarkerClick(pet.id) }
                     )
                 }
+            }
+            if (currentLocation != null) {
+                CurrentLocationMarker(location = currentLocation)
             }
         }
 

@@ -61,6 +61,10 @@ dependencies {
     implementation(libs.firebase.storage)
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
+    implementation(libs.play.services.location)
+
+    implementation(libs.play.services.maps)
+    implementation(libs.maps.compose)
     implementation(libs.kotlinx.coroutines.play.services)
 
     implementation(libs.androidx.compose.material.icons.extended)
