@@ -4,12 +4,9 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -54,6 +51,8 @@ import io.morfly.compose.bottomsheet.material3.rememberBottomSheetScaffoldState
 import io.morfly.compose.bottomsheet.material3.rememberBottomSheetState
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -86,7 +85,6 @@ fun MissingReportTabScreen(
     val buttonMargin = 16.dp
 
     var topContentHeight by remember { mutableStateOf(0.dp) }
-
     var isMyLocationEnabled by remember { mutableStateOf(false) }
 
     fun startLocationService() {
@@ -135,14 +133,14 @@ fun MissingReportTabScreen(
         position = CameraPosition.fromLatLngZoom(defaultSeoul, 15f)
     }
 
-    val isInitialMoveDone = remember { mutableStateOf(false) }
-
-    LaunchedEffect(currentLocation) {
-        isInitialMoveDone.value = true
-        if (!isInitialMoveDone.value && currentLocation != null && uiState.selectedPet == null) {
+    LaunchedEffect(Unit) {
+        val location = snapshotFlow { currentLocation }
+            .filterNotNull()
+            .first()
+        if (uiState.selectedPet == null) {
             cameraPositionState.animate(
                 CameraUpdateFactory.newLatLngZoom(
-                    LatLng(currentLocation!!.latitude, currentLocation!!.longitude),
+                    LatLng(location.latitude, location.longitude),
                     15f
                 )
             )
@@ -205,33 +203,65 @@ fun MissingReportTabScreen(
             }
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
-                ReportMapArea(
-                    pets = uiState.currentPets,
-                    selectedPet = uiState.selectedPet,
-                    loadedImageIds = uiState.loadedImageIds,
-                    onImageLoaded = viewModel::onImageLoaded,
-                    isMyLocationEnabled = isMyLocationEnabled,
+                val visibleHeight = runCatching { sheetState.requireSheetVisibleHeight() }.getOrDefault(0f)
+                val halfHeightPx = with(localDensity) { halfHeight.toPx() }
+                val overlapHeightPx = with(localDensity) { overlapHeight.toPx() }
+                val buttonMarginPx = with(localDensity) { buttonMargin.toPx() }
+
+                val commonShiftOffset = visibleHeight.coerceAtMost(halfHeightPx)
+                Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .offset {
-                            val visibleHeightPx = runCatching {
-                                sheetState.requireSheetVisibleHeight()
-                            }.getOrDefault(0f)
+                        .offset { IntOffset(x = 0, y = -commonShiftOffset.roundToInt()) }
+                ) {
+                    ReportMapArea(
+                        pets = uiState.currentPets,
+                        selectedPet = uiState.selectedPet,
+                        loadedImageIds = uiState.loadedImageIds,
+                        onImageLoaded = viewModel::onImageLoaded,
+                        isMyLocationEnabled = isMyLocationEnabled,
+                        cameraPositionState = cameraPositionState,
+                        contentPadding = PaddingValues(bottom = overlapHeight),
+                        onMarkerClick = { petId -> viewModel.selectPet(petId) },
+                        onMapClick = { viewModel.clearSelection() },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .offset { IntOffset(x = 0, y = overlapHeightPx.roundToInt()) }
+                    )
 
-                            val halfHeightPx = with(localDensity) { halfHeight.toPx() }
-                            val overlapHeightPx = with(localDensity) { overlapHeight.toPx() }
-
-                            val targetHeightPx = visibleHeightPx.coerceAtMost(halfHeightPx)
-
-                            val calculatedOffset = (targetHeightPx - overlapHeightPx).coerceAtLeast(0f)
-
-                            IntOffset(x = 0, y = -calculatedOffset.roundToInt())
-                        },
-                    cameraPositionState = cameraPositionState,
-                    contentPadding = PaddingValues(bottom = overlapHeight),
-                    onMarkerClick = { petId -> viewModel.selectPet(petId) },
-                    onMapClick = { viewModel.clearSelection() }
-                )
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(end = buttonMargin)
+                            .offset { IntOffset(x = 0, y = -buttonMarginPx.roundToInt()) }
+                    ) {
+                        CurrentLocationMarker(
+                            onLocationClick = {
+                                when {
+                                    !isMyLocationEnabled -> {
+                                        Toast.makeText(context, "위치 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
+                                        permissionLauncher.launch(
+                                            arrayOf(
+                                                Manifest.permission.ACCESS_FINE_LOCATION,
+                                                Manifest.permission.ACCESS_COARSE_LOCATION
+                                            )
+                                        )
+                                    }
+                                    else -> {
+                                        scope.launch {
+                                            cameraPositionState.animate(
+                                                CameraUpdateFactory.newLatLngZoom(
+                                                    LatLng(currentLocation!!.latitude, currentLocation!!.longitude),
+                                                    15f
+                                                )
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
             }
         }
 
@@ -245,59 +275,5 @@ fun MissingReportTabScreen(
             onPostingClick = onNavigateToWrite,
             onFavoriteClick = {}
         )
-
-        AnimatedVisibility(
-            visible = sheetState.targetValue != SheetDetent.Expanded,
-            enter = fadeIn(animationSpec = tween(durationMillis = 150)),
-            exit = fadeOut(animationSpec = tween(durationMillis = 150)),
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = buttonMargin)
-                .offset {
-                    val visibleHeight = runCatching {
-                        sheetState.requireSheetVisibleHeight()
-                    }.getOrDefault(0f)
-                    val marginPx = buttonMargin.toPx()
-
-                    IntOffset(x = 0, y = -(visibleHeight + marginPx).roundToInt())
-                }
-        ) {
-            CurrentLocationMarker(
-                onLocationClick = {
-                    scope.launch {
-                        cameraPositionState.animate(
-                            CameraUpdateFactory.newLatLngZoom(
-                                LatLng(currentLocation!!.latitude, currentLocation!!.longitude),
-                                15f
-                            )
-                        )
-                    }
-                    /*when {
-                        !isMyLocationEnabled -> {
-                            Toast.makeText(context, "위치 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
-                            permissionLauncher.launch(
-                                arrayOf(
-                                    Manifest.permission.ACCESS_FINE_LOCATION,
-                                    Manifest.permission.ACCESS_COARSE_LOCATION
-                                )
-                            )
-                        }
-                        currentLocation == null -> {
-                            Toast.makeText(context, "현재 위치를 찾는 중입니다...", Toast.LENGTH_SHORT).show()
-                        }
-                        else -> {
-                            scope.launch {
-                                cameraPositionState.animate(
-                                    CameraUpdateFactory.newLatLngZoom(
-                                        LatLng(currentLocation!!.latitude, currentLocation!!.longitude),
-                                        15f
-                                    )
-                                )
-                            }
-                        }
-                    }*/
-                }
-            )
-        }
     }
 }
