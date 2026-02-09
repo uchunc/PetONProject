@@ -9,4 +9,6 @@ interface ReportDataSource {
     fun getPostDetail(id: String): Flow<ReportPostDto?>
 
     suspend fun addPost(dto: ReportPostDto)
+    suspend fun updatePost(dto: ReportPostDto)
+    suspend fun deletePost(id: String)
 }

@@ -56,4 +56,14 @@ class ReportRemoteDataSourceImpl @Inject constructor(
     override suspend fun addPost(dto: ReportPostDto) {
         firestore.collection("posts").add(dto).await()
     }
+
+    override suspend fun updatePost(dto: ReportPostDto) {
+        if (dto.id.isNotEmpty()) {
+            firestore.collection("posts").document(dto.id).set(dto).await()
+        }
+    }
+
+    override suspend fun deletePost(id: String) {
+        firestore.collection("posts").document(id).delete().await()
+    }
 }

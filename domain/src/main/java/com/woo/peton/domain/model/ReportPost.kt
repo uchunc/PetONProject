@@ -8,6 +8,7 @@ data class ReportPost(
     val reportType: ReportType,
     val title: String,
 
+    val animalType: String = "개",
     val breed: String,
     val gender: String,
     val age: String,
@@ -21,6 +22,7 @@ data class ReportPost(
 
     val occurrenceDate: LocalDateTime,
     val createdAt: LocalDateTime,
+    val updatedAt: LocalDateTime? = null,
 
     val authorName: String,
     val authorId: String = "",

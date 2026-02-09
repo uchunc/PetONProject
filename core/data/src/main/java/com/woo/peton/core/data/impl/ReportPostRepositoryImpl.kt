@@ -25,13 +25,28 @@ class ReportPostRepositoryImpl @Inject constructor(
         dataSource.getPostDetail(id).map { it?.toDomain() }
 
     override suspend fun addPost(pet: ReportPost): Result<Boolean> = runCatching {
-        val finalImageUrl = pet.imageUrl
+        val finalImageUrl = uploadImageIfNeeded(pet.imageUrl)
+        dataSource.addPost(pet.copy(imageUrl = finalImageUrl).toDto())
+        true
+    }
+
+    override suspend fun updatePost(pet: ReportPost): Result<Boolean> = runCatching {
+        val finalImageUrl = uploadImageIfNeeded(pet.imageUrl)
+        dataSource.updatePost(pet.copy(imageUrl = finalImageUrl).toDto())
+        true
+    }
+
+    override suspend fun deletePost(id: String): Result<Boolean> = runCatching {
+        dataSource.deletePost(id)
+        true
+    }
+
+    private suspend fun uploadImageIfNeeded(imageUrl: String): String {
+        return imageUrl
             .takeIf { it.isNotBlank() && !it.startsWith("http") }
             ?.let { uri ->
                 val fileName = "${UUID.randomUUID()}.jpg"
                 imageDataSource.uploadImage(uri, "posts/$fileName").getOrThrow()
-            } ?: pet.imageUrl
-        dataSource.addPost(pet.copy(imageUrl = finalImageUrl).toDto())
-        true
+            } ?: imageUrl
     }
 }

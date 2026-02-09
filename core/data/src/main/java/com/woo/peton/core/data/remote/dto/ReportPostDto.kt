@@ -11,6 +11,7 @@ data class ReportPostDto(
     val reportType: String = "",
     val title: String = "",
 
+    val animalType: String = "",
     val breed: String = "",
     val gender: String = "",
     val age: String = "",
@@ -22,6 +23,7 @@ data class ReportPostDto(
 
     val occurrenceDate: Timestamp? = null,
     val createdAt: Timestamp? = null,
+    val updatedAt: Timestamp? = null,
 
     val authorName: String = "",
     val authorId: String = "",
