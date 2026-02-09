@@ -22,7 +22,7 @@ import javax.inject.Singleton
 
 @Singleton
 class LocationRepositoryImpl @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext context: Context
 ) : LocationRepository {
 
     private val fusedLocationClient: FusedLocationProviderClient =
