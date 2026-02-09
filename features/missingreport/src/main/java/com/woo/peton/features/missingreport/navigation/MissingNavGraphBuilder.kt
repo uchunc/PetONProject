@@ -24,7 +24,15 @@ fun NavGraphBuilder.missingNavBuilder(navController: NavHostController) {
     }
 
     composable<MissingNavigationRoute.PostingScreen> {
-        PostingScreen(navController = navController)
+        PostingScreen(
+            navController = navController,
+            onBackClick = {
+                navController.popBackStack()
+            },
+            onLocationSelectClick = {
+                navController.navigate(MissingNavigationRoute.LocationSelectScreen)
+            }
+        )
     }
 
     composable<MissingNavigationRoute.DetailScreen> { backStackEntry ->
@@ -32,7 +40,18 @@ fun NavGraphBuilder.missingNavBuilder(navController: NavHostController) {
 
         MissingReportDetailScreen(
             petId = route.petId,
-            onBackClick = { navController.popBackStack() }
+            onBackClick = { navController.popBackStack() },
+            onEditClick = { post ->
+                backStackEntry.savedStateHandle["post_to_edit"] = post
+                navController.navigate(MissingNavigationRoute.PostingScreen)
+            },
+            onDeleteClick = { petId ->
+                // 삭제 로직 처리 (예: ViewModel 호출 후 popBackStack 등)
+                // 지금은 단순히 뒤로가기 예시
+                // navController.popBackStack()
+            },
+            onShareClick = {/*공유 Intent 실행 로직 등*/ },
+            onReportClick = {/*신고 화면 이동 등*/ }
         )
     }
 

@@ -19,6 +19,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -31,7 +33,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -43,6 +47,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.woo.peton.core.ui.R
+import com.woo.peton.domain.model.ReportPost
 import com.woo.peton.features.missingreport.MissingReportViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -50,7 +55,11 @@ import com.woo.peton.features.missingreport.MissingReportViewModel
 fun MissingReportDetailScreen(
     petId: String,
     viewModel: MissingReportViewModel = hiltViewModel(),
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onEditClick: (ReportPost) -> Unit,
+    onDeleteClick: (String) -> Unit,
+    onShareClick: () -> Unit,
+    onReportClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -58,14 +67,18 @@ fun MissingReportDetailScreen(
         uiState.currentPets.find { it.id == petId }
     }
 
+    val currentUserId = "current_user_id_example"
+    val isAuthor = pet?.authorId == currentUserId
+
+    var isMenuExpanded by remember { mutableStateOf(false) }
+    val scrollState = rememberScrollState()
+
     if (pet == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
         }
         return
     }
-
-    val scrollState = rememberScrollState()
 
     Scaffold(
         topBar = {
@@ -80,8 +93,50 @@ fun MissingReportDetailScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* TODO 공유하기 로직 */ }) {
-                        Icon(imageVector = ImageVector.vectorResource(id = R.drawable.plus), contentDescription = "공유")
+                    Box {
+                        IconButton(onClick = { isMenuExpanded = true }) {
+                            Icon(
+                                imageVector = ImageVector.vectorResource(id = R.drawable.menu_dots),
+                                contentDescription = "옵션"
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = isMenuExpanded,
+                            onDismissRequest = { isMenuExpanded = false },
+                            modifier = Modifier.background(Color.White)
+                        ) {
+                            if (isAuthor) {
+                                DropdownMenuItem(
+                                    text = { Text("수정하기") },
+                                    onClick = {
+                                        isMenuExpanded = false
+                                        onEditClick(pet)
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("삭제하기", color = Color.Red) },
+                                    onClick = {
+                                        isMenuExpanded = false
+                                        onDeleteClick(pet.id)
+                                    }
+                                )
+                            } else {
+                                DropdownMenuItem(
+                                    text = { Text("공유하기") },
+                                    onClick = {
+                                        isMenuExpanded = false
+                                        onShareClick()
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("신고하기") },
+                                    onClick = {
+                                        isMenuExpanded = false
+                                        onReportClick()
+                                    }
+                                )
+                            }
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

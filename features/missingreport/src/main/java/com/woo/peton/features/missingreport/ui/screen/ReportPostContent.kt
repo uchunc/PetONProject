@@ -94,6 +94,14 @@ fun ReportPostContent(
                 style = MaterialTheme.typography.labelMedium,
                 color = Color.Gray
             )
+            if (pet.updatedAt != null) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "(/${pet.updatedAt!!.toRelativeString()}) 수정됨 ",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color.Gray
+                )
+            }
         }
 
         HorizontalDivider(
