@@ -12,7 +12,7 @@ import com.woo.peton.core.ui.R
 import com.woo.peton.core.ui.component.CirclePlaceholder
 
 @Composable
-fun CurrentLocationButton(
+fun CurrentLocationMarker(
     onLocationClick: () -> Unit
 ) {
     CirclePlaceholder(

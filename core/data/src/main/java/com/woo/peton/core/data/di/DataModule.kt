@@ -3,11 +3,13 @@ package com.woo.peton.core.data.di
 import com.woo.peton.core.data.impl.AuthRepositoryImpl
 import com.woo.peton.core.data.impl.BannerRepositoryImpl
 import com.woo.peton.core.data.impl.DetectiveRepositoryImpl
+import com.woo.peton.core.data.impl.LocationRepositoryImpl
 import com.woo.peton.core.data.impl.MyPetRepositoryImpl
 import com.woo.peton.core.data.impl.ReportPostRepositoryImpl
 import com.woo.peton.domain.repository.AuthRepository
 import com.woo.peton.domain.repository.BannerRepository
 import com.woo.peton.domain.repository.DetectiveRepository
+import com.woo.peton.domain.repository.LocationRepository
 import com.woo.peton.domain.repository.MyPetRepository
 import com.woo.peton.domain.repository.ReportPostRepository
 import dagger.Binds
@@ -49,4 +51,10 @@ abstract class DataModule {
     internal abstract fun bindMissingPetRepository(
         impl: ReportPostRepositoryImpl
     ): ReportPostRepository
+
+    @Binds
+    @Singleton
+    internal abstract fun bindLocationRepository(
+        impl: LocationRepositoryImpl
+    ): LocationRepository
 }

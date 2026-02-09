@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.woo.peton.domain.model.ReportPost
 import com.woo.peton.domain.model.ReportType
+import com.woo.peton.domain.repository.LocationRepository
 import com.woo.peton.domain.repository.ReportPostRepository
 import com.woo.peton.features.missingreport.ui.state.MissingReportUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,6 +22,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MissingReportViewModel @Inject constructor(
     reportPostRepository: ReportPostRepository,
+    locationRepository: LocationRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val _filters = MutableStateFlow(ReportType.entries.associateWith { true })
@@ -28,6 +30,13 @@ class MissingReportViewModel @Inject constructor(
     private val _loadedImageIds = MutableStateFlow<Set<String>>(emptySet())
 
     val isFromHome: Boolean = savedStateHandle.get<String>("filterType") != null
+
+    val currentLocation = locationRepository.latestLocation
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
+        )
 
     private val _allPetsFlow = combine(
         reportPostRepository.getPosts(ReportType.MISSING),

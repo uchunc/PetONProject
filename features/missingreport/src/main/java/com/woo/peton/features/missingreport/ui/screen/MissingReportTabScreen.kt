@@ -1,5 +1,11 @@
 package com.woo.peton.features.missingreport.ui.screen
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -24,19 +30,23 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.woo.peton.core.ui.component.LocalBottomPadding
 import com.woo.peton.features.missingreport.MissingReportViewModel
+import com.woo.peton.features.missingreport.service.LocationService
 import com.woo.peton.features.missingreport.ui.items.bottomsheet.MissingReportBottomSheet
-import com.woo.peton.features.missingreport.ui.items.map.CurrentLocationButton
+import com.woo.peton.features.missingreport.ui.items.map.CurrentLocationMarker
 import com.woo.peton.features.missingreport.ui.items.map.ReportMapArea
 import com.woo.peton.features.missingreport.ui.items.map.SearchBarAndUtils
 import io.morfly.compose.bottomsheet.material3.BottomSheetScaffold
@@ -59,6 +69,9 @@ fun MissingReportTabScreen(
     onNavigateToWrite: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val currentLocation by viewModel.currentLocation.collectAsStateWithLifecycle()
+
+    val context = LocalContext.current
     val localDensity = LocalDensity.current
     val scope = rememberCoroutineScope()
 
@@ -66,7 +79,6 @@ fun MissingReportTabScreen(
     val screenHeight = with(localDensity) {LocalWindowInfo.current.containerSize.height.toDp()}
     val bottomPadding = LocalBottomPadding.current
 
-    //높이 설정
     val peekHeight = 40.dp
     val collapsedHeight = bottomPadding + peekHeight
     val halfHeight = screenHeight * 0.45f
@@ -75,10 +87,66 @@ fun MissingReportTabScreen(
 
     var topContentHeight by remember { mutableStateOf(0.dp) }
 
-    //지도 설정
+    var isMyLocationEnabled by remember { mutableStateOf(false) }
+
+    fun startLocationService() {
+        val intent = Intent(context, LocationService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(intent)
+        } else {
+            context.startService(intent)
+        }
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val isGranted = permissions.values.all { it }
+        if (isGranted) {
+            isMyLocationEnabled = true
+            startLocationService()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        val permissions = arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+
+        val hasPermission = permissions.all {
+            ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+        }
+
+        if (hasPermission) {
+            isMyLocationEnabled = true
+            startLocationService()
+        } else {
+            val permissionsToRequest = permissions.toMutableList()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
+            }
+            permissionLauncher.launch(permissionsToRequest.toTypedArray())
+        }
+    }
+
     val defaultSeoul = LatLng(37.5665, 126.9780)
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(defaultSeoul, 15f)
+    }
+
+    val isInitialMoveDone = remember { mutableStateOf(false) }
+
+    LaunchedEffect(currentLocation) {
+        isInitialMoveDone.value = true
+        if (!isInitialMoveDone.value && currentLocation != null && uiState.selectedPet == null) {
+            cameraPositionState.animate(
+                CameraUpdateFactory.newLatLngZoom(
+                    LatLng(currentLocation!!.latitude, currentLocation!!.longitude),
+                    15f
+                )
+            )
+        }
     }
 
     val isSheetActive = uiState.selectedPet != null || viewModel.isFromHome
@@ -142,6 +210,7 @@ fun MissingReportTabScreen(
                     selectedPet = uiState.selectedPet,
                     loadedImageIds = uiState.loadedImageIds,
                     onImageLoaded = viewModel::onImageLoaded,
+                    isMyLocationEnabled = isMyLocationEnabled,
                     modifier = Modifier
                         .fillMaxSize()
                         .offset {
@@ -193,15 +262,38 @@ fun MissingReportTabScreen(
                     IntOffset(x = 0, y = -(visibleHeight + marginPx).roundToInt())
                 }
         ) {
-            CurrentLocationButton(
+            CurrentLocationMarker(
                 onLocationClick = {
-                    /*if (userLocation != null) {
-                        scope.launch {
-                            cameraPositionState.animate(
-                                CameraUpdateFactory.newCameraPosition(
-                                    CameraPosition.fromLatLngZoom(userLocation!!, 17f)
+                    scope.launch {
+                        cameraPositionState.animate(
+                            CameraUpdateFactory.newLatLngZoom(
+                                LatLng(currentLocation!!.latitude, currentLocation!!.longitude),
+                                15f
+                            )
+                        )
+                    }
+                    /*when {
+                        !isMyLocationEnabled -> {
+                            Toast.makeText(context, "위치 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
+                            permissionLauncher.launch(
+                                arrayOf(
+                                    Manifest.permission.ACCESS_FINE_LOCATION,
+                                    Manifest.permission.ACCESS_COARSE_LOCATION
                                 )
                             )
+                        }
+                        currentLocation == null -> {
+                            Toast.makeText(context, "현재 위치를 찾는 중입니다...", Toast.LENGTH_SHORT).show()
+                        }
+                        else -> {
+                            scope.launch {
+                                cameraPositionState.animate(
+                                    CameraUpdateFactory.newLatLngZoom(
+                                        LatLng(currentLocation!!.latitude, currentLocation!!.longitude),
+                                        15f
+                                    )
+                                )
+                            }
                         }
                     }*/
                 }
