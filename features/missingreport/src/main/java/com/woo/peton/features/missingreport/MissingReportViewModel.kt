@@ -3,6 +3,8 @@ package com.woo.peton.features.missingreport
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import com.woo.peton.domain.model.ReportPost
 import com.woo.peton.domain.model.ReportType
 import com.woo.peton.domain.repository.AuthRepository
@@ -54,19 +56,27 @@ class MissingReportViewModel @Inject constructor(
     ) { missing, protection, spotted ->
         missing + protection + spotted
     }
-
+    private val _visibleBounds = MutableStateFlow<LatLngBounds?>(null)
     val uiState: StateFlow<MissingReportUiState> = combine(
         _allPetsFlow,
         _filters,
         _selectedPet,
-        _loadedImageIds
-    ){ allPets, filters, selectedPet, loadedImageIds ->
+        _visibleBounds
+    ){ allPets, filters, selectedPet, bounds ->
         val filteredPets = allPets.filter { pet ->
             filters[pet.reportType] == true
         }
 
+        val visiblePets = if (bounds == null) {
+            filteredPets
+        } else {
+            filteredPets.filter { pet ->
+                bounds.contains(LatLng(pet.latitude, pet.longitude))
+            }
+        }
+
         MissingReportUiState(
-            currentPets = filteredPets,
+            pets = visiblePets,
             selectedPet = selectedPet,
             filters = filters,
             isLoading = false,
@@ -111,7 +121,7 @@ class MissingReportViewModel @Inject constructor(
     }
 
     fun selectPet(petId: String) {
-        val foundPet = uiState.value.currentPets.find { it.id == petId }
+        val foundPet = uiState.value.pets.find { it.id == petId }
         _selectedPet.value = foundPet
     }
 
@@ -122,5 +132,9 @@ class MissingReportViewModel @Inject constructor(
     fun onImageLoaded(petId: String) {
         if (_loadedImageIds.value.contains(petId)) return
         _loadedImageIds.update { it + petId }
+    }
+
+    fun updateVisibleBounds(bounds: LatLngBounds) {
+        _visibleBounds.value = bounds
     }
 }

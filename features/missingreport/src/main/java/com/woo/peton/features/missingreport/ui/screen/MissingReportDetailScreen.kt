@@ -63,8 +63,8 @@ fun MissingReportDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val pet = remember(uiState.currentPets, petId) {
-        uiState.currentPets.find { it.id == petId }
+    val pet = remember(uiState.pets, petId) {
+        uiState.pets.find { it.id == petId }
     }
 
     val currentUserId by viewModel.currentUserId.collectAsStateWithLifecycle()

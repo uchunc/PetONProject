@@ -189,7 +189,7 @@ fun MissingReportTabScreen(
             sheetShadowElevation = 10.dp,
             sheetContent = {
                 MissingReportBottomSheet(
-                    pets = uiState.currentPets,
+                    pets = uiState.pets,
                     selectedPet = uiState.selectedPet,
                     onItemClick = { selectedPetId ->
                         viewModel.selectPet(selectedPetId)
@@ -215,7 +215,7 @@ fun MissingReportTabScreen(
                         .offset { IntOffset(x = 0, y = -commonShiftOffset.roundToInt()) }
                 ) {
                     ReportMapArea(
-                        pets = uiState.currentPets,
+                        pets = uiState.pets,
                         selectedPet = uiState.selectedPet,
                         currentLocation = currentLocation,
                         onImageLoaded = viewModel::onImageLoaded,
@@ -223,6 +223,7 @@ fun MissingReportTabScreen(
                         contentPadding = PaddingValues(bottom = overlapHeight),
                         onMarkerClick = { petId -> viewModel.selectPet(petId) },
                         onMapClick = { viewModel.clearSelection() },
+                        onBoundsChanged = { bounds -> viewModel.updateVisibleBounds(bounds) },
                         modifier = Modifier
                             .fillMaxSize()
                             .offset { IntOffset(x = 0, y = overlapHeightPx.roundToInt()) }

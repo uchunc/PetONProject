@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
@@ -38,7 +39,8 @@ fun ReportMapArea(
     cameraPositionState: CameraPositionState,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     onMarkerClick: (String) -> Unit,
-    onMapClick: () -> Unit
+    onMapClick: () -> Unit,
+    onBoundsChanged: (LatLngBounds) -> Unit
 ) {
     var isMapLoaded by remember { mutableStateOf(false) }
     val density = LocalDensity.current
@@ -58,6 +60,15 @@ fun ReportMapArea(
             cameraPositionState.move(
                 CameraUpdateFactory.scrollBy(0f, yOffsetPx)
             )
+        }
+    }
+
+    LaunchedEffect(cameraPositionState.isMoving) {
+        if (!cameraPositionState.isMoving) {
+            val bounds = cameraPositionState.projection?.visibleRegion?.latLngBounds
+            if (bounds != null) {
+                onBoundsChanged(bounds)
+            }
         }
     }
 

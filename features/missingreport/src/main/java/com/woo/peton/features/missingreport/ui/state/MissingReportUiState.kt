@@ -4,7 +4,7 @@ import com.woo.peton.domain.model.ReportPost
 import com.woo.peton.domain.model.ReportType
 
 data class MissingReportUiState(
-    val currentPets: List<ReportPost> = emptyList(),
+    val pets: List<ReportPost> = emptyList(),
     val selectedPet: ReportPost? = null,
     val filters: Map<ReportType, Boolean> = ReportType.entries.associateWith { true },
     val isLoading: Boolean = false,
