@@ -1,6 +1,7 @@
 package com.woo.peton.features.missingreport
 
 import android.net.Uri
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.woo.peton.domain.model.ReportPost
@@ -16,7 +17,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import javax.inject.Inject
-import androidx.core.net.toUri
 
 @HiltViewModel
 class PostingViewModel @Inject constructor(
@@ -60,6 +60,8 @@ class PostingViewModel @Inject constructor(
 
         if (post.imageUrl.isNotEmpty()) {
             selectedImageUri.value = post.imageUrl.toUri()
+        } else {
+            selectedImageUri.value = null
         }
     }
 
@@ -80,16 +82,17 @@ class PostingViewModel @Inject constructor(
             }
 
             val finalImageUrl = selectedImageUri.value?.toString() ?: ""
+            val authorProfileUrl = user.profileImageUrl
 
             if (editingPostId != null) {
-                updateExistingPost(editingPostId!!, user.uid, user.name, finalImageUrl)
+                updateExistingPost(editingPostId!!, user.uid, user.name, finalImageUrl, authorProfileUrl)
             } else {
-                createNewPost(user.uid, user.name, finalImageUrl)
+                createNewPost(user.uid, user.name, finalImageUrl, authorProfileUrl)
             }
         }
     }
 
-    private suspend fun createNewPost(userId: String, userName: String, imageUrl: String) {
+    private suspend fun createNewPost(userId: String, userName: String, imageUrl: String, profileUrl: String?) {
         val newPost = ReportPost(
             reportType = reportType.value,
             title = title.value,
@@ -105,14 +108,15 @@ class PostingViewModel @Inject constructor(
             longitude = longitude.value,
             occurrenceDate = LocalDateTime.now(),
             createdAt = LocalDateTime.now(),
-            authorName = userName
+            authorName = userName,
+            authorProfileImageUrl = profileUrl
         )
 
         val result = reportPostRepository.addPost(newPost)
         handleResult(result)
     }
 
-    private suspend fun updateExistingPost(postId: String, userId: String, userName: String, imageUrl: String) {
+    private suspend fun updateExistingPost(postId: String, userId: String, userName: String, imageUrl: String, profileUrl: String?) {
         val updatedPost = ReportPost(
             id = postId,
             reportType = reportType.value,
@@ -130,7 +134,8 @@ class PostingViewModel @Inject constructor(
             createdAt = originalCreatedAt ?: LocalDateTime.now(),
             updatedAt = LocalDateTime.now(),
             authorName = userName,
-            authorId = userId
+            authorId = userId,
+            authorProfileImageUrl = profileUrl
         )
         val result = reportPostRepository.updatePost(updatedPost)
         handleResult(result)

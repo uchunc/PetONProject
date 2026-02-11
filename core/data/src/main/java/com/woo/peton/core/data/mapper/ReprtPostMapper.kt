@@ -36,6 +36,7 @@ fun ReportPostDto.toDomain(): ReportPost {
 
 fun ReportPost.toDto(): ReportPostDto {
     return ReportPostDto(
+        id = this.id,
         reportType = this.reportType.name,
         title = this.title,
         animalType = this.animalType,
