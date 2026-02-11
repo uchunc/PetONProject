@@ -3,7 +3,6 @@ package com.woo.peton.core.ui.component
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,7 +25,6 @@ fun CirclePlaceholder(
 ) {
     Box(
         modifier = modifier
-            .size(50.dp)
             .shadow(elevation = elevation, shape = CircleShape)
             .clip(CircleShape)
             .background(color)

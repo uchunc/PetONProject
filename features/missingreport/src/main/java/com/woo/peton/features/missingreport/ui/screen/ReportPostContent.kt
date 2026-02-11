@@ -1,6 +1,6 @@
 package com.woo.peton.features.missingreport.ui.screen
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -22,15 +21,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.MapsComposeExperimentalApi
 import com.google.maps.android.compose.rememberCameraPositionState
+import com.woo.peton.core.ui.R
+import com.woo.peton.core.ui.component.CirclePlaceholder
 import com.woo.peton.core.utils.toFormattedString
 import com.woo.peton.core.utils.toRelativeString
 import com.woo.peton.domain.model.ReportPost
@@ -59,29 +63,42 @@ fun ReportPostContent(
             }
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = pet.occurrenceDate.toFormattedString(),
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray
+                text = pet.title,
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Bold
             )
         }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Text(
-            text = pet.title,
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
-        )
-
         Spacer(modifier = Modifier.height(8.dp))
-
+        Text(
+            text = pet.occurrenceDate.toFormattedString(),
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Gray
+        )
+        Spacer(modifier = Modifier.height(12.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(24.dp)
-                    .clip(CircleShape)
-                    .background(Color.LightGray)
-            )
+            CirclePlaceholder(
+                modifier = Modifier.size(24.dp),
+                color = Color.LightGray
+            ) {
+                when {
+                    !pet.authorProfileImageUrl.isNullOrEmpty() -> {
+                        AsyncImage(
+                            model = pet.authorProfileImageUrl,
+                            contentDescription = "작성자 프로필",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                    else -> {
+                        Image(
+                            painter = painterResource(id = R.drawable.my_page),
+                            contentDescription = "기본 프로필",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                }
+            }
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = pet.authorName,
@@ -89,6 +106,8 @@ fun ReportPostContent(
                 fontWeight = FontWeight.SemiBold
             )
             Spacer(modifier = Modifier.width(8.dp))
+        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = "·  ${pet.createdAt.toRelativeString()} 등록",
                 style = MaterialTheme.typography.labelMedium,
@@ -103,15 +122,13 @@ fun ReportPostContent(
                 )
             }
         }
-
         HorizontalDivider(
             modifier = Modifier.padding(vertical = 24.dp),
             color = Color(0xFFEEEEEE)
         )
-
         InfoRow(label = "품종", value = pet.breed)
         InfoRow(label = "성별 / 나이", value = "${pet.gender} / ${pet.age}")
-        InfoRow(label = "발견 / 실종", value = pet.locationDescription)
+        InfoRow(label = "장소 ", value = pet.locationDescription)
 
         Spacer(modifier = Modifier.height(24.dp))
 
