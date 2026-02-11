@@ -67,8 +67,10 @@ fun MissingReportDetailScreen(
         uiState.currentPets.find { it.id == petId }
     }
 
-    val currentUserId = "current_user_id_example"
-    val isAuthor = pet?.authorId == currentUserId
+    val currentUserId by viewModel.currentUserId.collectAsStateWithLifecycle()
+    val isAuthor = remember(pet, currentUserId) {
+        pet != null && currentUserId != null && pet.authorId == currentUserId
+    }
 
     var isMenuExpanded by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()

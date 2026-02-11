@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.woo.peton.domain.model.ReportPost
 import com.woo.peton.domain.model.ReportType
+import com.woo.peton.domain.repository.AuthRepository
 import com.woo.peton.domain.repository.LocationRepository
 import com.woo.peton.domain.repository.ReportPostRepository
 import com.woo.peton.features.missingreport.ui.state.MissingReportUiState
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -23,13 +25,20 @@ import javax.inject.Inject
 class MissingReportViewModel @Inject constructor(
     reportPostRepository: ReportPostRepository,
     locationRepository: LocationRepository,
+    authRepository: AuthRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val _filters = MutableStateFlow(ReportType.entries.associateWith { true })
     private val _selectedPet = MutableStateFlow<ReportPost?>(null)
     private val _loadedImageIds = MutableStateFlow<Set<String>>(emptySet())
-
     val isFromHome: Boolean = savedStateHandle.get<String>("filterType") != null
+    val currentUserId: StateFlow<String?> = authRepository.getUserProfile()
+        .map { it?.uid }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
+        )
 
     val currentLocation = locationRepository.latestLocation
         .stateIn(

@@ -16,7 +16,6 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         MapsInitializer.initialize(applicationContext, MapsInitializer.Renderer.LATEST, null)
-
         enableEdgeToEdge()
         setContent {
             PetONProjectTheme {
