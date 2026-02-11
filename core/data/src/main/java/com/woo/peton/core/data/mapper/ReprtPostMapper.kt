@@ -28,6 +28,7 @@ fun ReportPostDto.toDomain(): ReportPost {
         updatedAt = this.updatedAt?.toLocalDateTime(),
         authorName = this.authorName,
         authorId = this.authorId,
+        authorProfileImageUrl = this.authorProfileImageUrl,
         commentCount = this.commentCount,
         isResolved = this.isResolved
     )
@@ -50,6 +51,7 @@ fun ReportPost.toDto(): ReportPostDto {
         updatedAt = this.updatedAt?.toTimestamp(),
         authorName = this.authorName,
         authorId = this.authorId,
+        authorProfileImageUrl = this.authorProfileImageUrl,
         commentCount = this.commentCount,
         isResolved = this.isResolved
     )

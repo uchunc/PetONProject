@@ -1,5 +1,3 @@
-// core/data/src/main/java/com/woo/peton/core/data/datasource/AuthDataSource.kt
-
 package com.woo.peton.core.data.datasource
 
 import com.woo.peton.core.data.remote.dto.MyPetDto
@@ -12,6 +10,7 @@ interface AuthDataSource {
     suspend fun saveUserInfo(userDto: UserDto)
     suspend fun savePetInfo(uid: String, petDto: MyPetDto)
     suspend fun updateUserInfo(userDto: UserDto)
+    suspend fun getUserInfo(uid: String): UserDto?
 
     fun isUserLoggedIn(): Boolean
     fun signOut()

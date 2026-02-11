@@ -1,7 +1,13 @@
 package com.woo.peton.domain.model
 
+import android.os.Parcelable
+import com.woo.peton.core.utils.LocalDateTimeParceler
+import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.TypeParceler
 import java.time.LocalDateTime
 
+@Parcelize
+@TypeParceler<LocalDateTime, LocalDateTimeParceler>
 data class ReportPost(
     val id: String = "",
     val petID : String = "",
@@ -26,7 +32,8 @@ data class ReportPost(
 
     val authorName: String,
     val authorId: String = "",
+    val authorProfileImageUrl: String? = null,
     val commentCount: Int = 0,
 
     val isResolved: Boolean = false
-)
+) : Parcelable

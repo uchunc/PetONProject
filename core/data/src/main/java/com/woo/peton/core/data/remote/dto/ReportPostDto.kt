@@ -27,6 +27,7 @@ data class ReportPostDto(
 
     val authorName: String = "",
     val authorId: String = "",
+    val authorProfileImageUrl: String? = null,
     val commentCount: Int = 0,
 
     val isResolved: Boolean = false

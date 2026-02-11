@@ -44,6 +44,20 @@ class AuthRemoteDataSourceImpl @Inject constructor(
             .await()
     }
 
+    override suspend fun getUserInfo(uid: String): UserDto? {
+        return try {
+            val snapshot = firestore.collection("users").document(uid).get().await()
+            if (snapshot.exists()) {
+                snapshot.toObject(UserDto::class.java)
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
     override fun isUserLoggedIn(): Boolean = auth.currentUser != null
 
     override fun signOut() {
